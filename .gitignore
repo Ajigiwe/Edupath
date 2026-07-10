@@ -29,5 +29,3 @@ venv/
 Thumbs.db
 
 # Project specific
-core/migrations/*.py
-!core/migrations/__init__.py
