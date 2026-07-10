@@ -3,4 +3,5 @@ gunicorn>=21.0
 psycopg2-binary>=2.9
 whitenoise>=6.0
 Pillow>=10.0
+requests>=2.31
 python-decouple>=3.8
