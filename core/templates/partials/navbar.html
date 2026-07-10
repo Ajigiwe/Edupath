@@ -1,0 +1,356 @@
+<nav class="desktop-nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="{% url 'home' %}">
+      <span class="brand-box"><i class="bi bi-mortarboard-fill"></i></span>
+      <span class="brand-text">EduPath</span>
+    </a>
+
+    <div class="nav-links">
+      <a class="nav-lk {% if request.resolver_match.url_name == 'program_dashboard' %}active{% endif %}" href="{% url 'program_dashboard' %}">Programs</a>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'institution_dashboard' %}active{% endif %}" href="{% url 'institution_dashboard' %}">Institutions</a>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'level_dashboard' %}active{% endif %}" href="{% url 'level_dashboard' %}">Levels</a>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'interest_dashboard' %}active{% endif %}" href="{% url 'interest_dashboard' %}">Interests</a>
+      <a class="nav-lk nav-lk-drop" data-bs-toggle="dropdown" aria-expanded="false">Curriculum <i class="bi bi-chevron-down" style="font-size:0.6rem;margin-left:0.2rem"></i></a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'department_dashboard' %}">Departments</a>
+        <a class="dropdown-item" href="{% url 'course_dashboard' %}">Courses</a>
+        <a class="dropdown-item" href="{% url 'schoollevel_dashboard' %}">School Levels</a>
+      </div>
+      <a class="nav-lk nav-lk-drop" data-bs-toggle="dropdown" aria-expanded="false">Academic <i class="bi bi-chevron-down" style="font-size:0.6rem;margin-left:0.2rem"></i></a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'program_details_dashboard' %}">Program Details</a>
+        <a class="dropdown-item" href="{% url 'ownership_dashboard' %}">Ownership</a>
+        <a class="dropdown-item" href="{% url 'institutiontype_dashboard' %}">Institution Type</a>
+      </div>
+      <a class="nav-lk nav-lk-drop" data-bs-toggle="dropdown" aria-expanded="false">Questions <i class="bi bi-chevron-down" style="font-size:0.6rem;margin-left:0.2rem"></i></a>
+      <div class="dropdown-menu">
+        <a class="dropdown-item" href="{% url 'add_theory_page' %}">Add Theory</a>
+        <a class="dropdown-item" href="{% url 'add_mcq_page' %}">Add MCQ</a>
+      </div>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'site_settings' %}active{% endif %}" href="{% url 'site_settings' %}">Settings</a>
+    </div>
+
+    <div class="nav-auth">
+      <a class="auth-btn auth-btn-outline" href="{% url 'logout' %}">
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+      </a>
+    </div>
+  </div>
+</nav>
+
+<nav class="mobile-bottom-nav">
+  <a href="{% url 'program_dashboard' %}" class="mb-item {% if request.resolver_match.url_name == 'program_dashboard' %}active{% endif %}">
+    <i class="bi bi-book-fill"></i>
+    <span>Programs</span>
+  </a>
+  <a href="{% url 'institution_dashboard' %}" class="mb-item {% if request.resolver_match.url_name == 'institution_dashboard' %}active{% endif %}">
+    <i class="bi bi-building-fill"></i>
+    <span>Schools</span>
+  </a>
+  <a href="{% url 'level_dashboard' %}" class="mb-item {% if request.resolver_match.url_name == 'level_dashboard' %}active{% endif %}">
+    <i class="bi bi-bar-chart-fill"></i>
+    <span>Levels</span>
+  </a>
+  <a href="{% url 'interest_dashboard' %}" class="mb-item {% if request.resolver_match.url_name == 'interest_dashboard' %}active{% endif %}">
+    <i class="bi bi-heart-fill"></i>
+    <span>Interests</span>
+  </a>
+  <div class="mb-item dropup" style="cursor:pointer">
+    <a class="mb-link" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-three-dots-vertical"></i>
+      <span>More</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end mb-2">
+      <li><a class="dropdown-item" href="{% url 'department_dashboard' %}">Departments</a></li>
+      <li><a class="dropdown-item" href="{% url 'course_dashboard' %}">Courses</a></li>
+      <li><a class="dropdown-item" href="{% url 'schoollevel_dashboard' %}">School Levels</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="{% url 'program_details_dashboard' %}">Program Details</a></li>
+      <li><a class="dropdown-item" href="{% url 'ownership_dashboard' %}">Ownership</a></li>
+      <li><a class="dropdown-item" href="{% url 'institutiontype_dashboard' %}">Institution Type</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="{% url 'add_theory_page' %}">Add Theory</a></li>
+      <li><a class="dropdown-item" href="{% url 'add_mcq_page' %}">Add MCQ</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item" href="{% url 'site_settings' %}">Settings</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+/* =============================================
+   DESKTOP NAV
+   ============================================= */
+.desktop-nav {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 60px;
+  padding: 0 1.5rem;
+  gap: 2rem;
+}
+
+/* Brand */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-box {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.brand-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+
+/* Nav links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex: 1;
+  justify-content: center;
+  position: relative;
+}
+
+.nav-lk {
+  position: relative;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nav-lk:hover {
+  color: var(--primary);
+  background: var(--background-light);
+}
+
+.nav-lk.active {
+  color: var(--primary);
+  font-weight: 600;
+  background: var(--background-light);
+}
+
+.nav-lk-drop {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-links .dropdown-menu {
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.4rem;
+}
+
+.nav-links .dropdown-item {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.nav-links .dropdown-item:hover {
+  background: var(--background-light);
+  color: var(--primary);
+}
+
+/* Auth section */
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.auth-btn-outline {
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  background: transparent;
+}
+
+.auth-btn-outline:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--background-light);
+}
+
+/* =============================================
+   MOBILE BOTTOM NAV
+   ============================================= */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.04);
+}
+
+.mb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  min-width: 64px;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.mb-item i {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.mb-item span {
+  line-height: 1;
+}
+
+.mb-item.active {
+  color: var(--primary);
+}
+
+.mb-item.active i {
+  transform: translateY(-3px);
+}
+
+.mb-item.active::after {
+  content: '';
+  position: absolute;
+  top: -0.5rem;
+  width: 24px;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 0 0 3px 3px;
+}
+
+.mb-item:hover {
+  color: var(--primary);
+}
+
+.mb-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.mb-link i {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.mb-link span {
+  line-height: 1;
+}
+
+.mb-link:hover {
+  color: var(--primary);
+}
+
+.mobile-bottom-nav .dropdown-menu {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.4rem;
+}
+
+.mobile-bottom-nav .dropdown-item {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+}
+
+.mobile-bottom-nav .dropdown-item:hover {
+  background: var(--background-light);
+  color: var(--primary);
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (min-width: 992px) {
+  .desktop-nav { display: block; }
+  .mobile-bottom-nav { display: none; }
+  body { padding-bottom: 0; padding-top: 60px; }
+}
+
+@media (max-width: 991.98px) {
+  body { padding-bottom: 78px; padding-top: 0; }
+}
+</style>

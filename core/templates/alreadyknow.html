@@ -1,0 +1,400 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block content %}
+
+<section class="alreadyknow-hero">
+    <div class="container py-5">
+        <div class="row justify-content-center text-center">
+            <div class="col-xl-9">
+                <span class="alreadyknow-badge">Program Search</span>
+                <h1 class="alreadyknow-title">Find the right school for your chosen course</h1>
+                <p class="alreadyknow-text">
+                    Already know what you want to study? Search institutions offering your preferred program,
+                    compare requirements, and find the best match for your aggregate.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-4 py-md-5">
+    <div class="container">
+        <form method="GET" class="filter-panel">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-5">
+                    <label class="form-label">Your SHS Aggregate</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-graph-up-arrow"></i></span>
+                        <input type="number" name="cutoff" class="form-control" placeholder="e.g. 12" value="{{ selected_cutoff }}" step="0.1" min="0" max="60">
+                    </div>
+                </div>
+                <div class="col-12 col-md-5">
+                    <label class="form-label">Select Program</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-bookmark-check"></i></span>
+                        <select name="program" class="form-select">
+                            <option value="">Choose a program</option>
+                            {% for p in programs_list %}
+                            <option value="{{ p.id }}" {% if selected_program == p.id|stringformat:"s" %}selected{% endif %}>
+                                {{ p.programname }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Search</button>
+                    <a href="{% url 'alreadyknow' %}" class="btn btn-outline-secondary flex-grow-1">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% if selected_program_obj %}
+<section class="pb-4">
+    <div class="container">
+        <div class="prereq-panel">
+            <div class="row g-3 align-items-center">
+                <div class="col-md">
+                    <h5 class="mb-1">{{ selected_program_obj.programname }}</h5>
+                    <p class="text-muted small mb-0">Prerequisite subjects</p>
+                </div>
+                <div class="col-md-auto">
+                    {% if viable_streams %}
+                    <span class="badge bg-primary me-2">Viable streams:</span>
+                    {% for s in viable_streams %}
+                    <span class="stream-tag">{{ s.name }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row g-2 mt-2">
+                {% for p in prereq_info %}
+                <div class="col-auto">
+                    <span class="prereq-tag">
+                        <strong>{{ p.subject.name }}</strong>
+                        <span class="prereq-level">{{ p.get_requirement_level_display }}</span>
+                        <span class="prereq-grade">min {{ p.min_grade }}</span>
+                    </span>
+                </div>
+                {% empty %}
+                <div class="col"><small class="text-muted">No specific subject prerequisites recorded.</small></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="pb-5">
+    <div class="container">
+        {% if programs %}
+        <div class="results-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+            <div>
+                <p class="results-label">Matching institutions</p>
+                <h4 class="results-title">{{ programs.paginator.count }} results</h4>
+            </div>
+            <span class="results-pill"><i class="bi bi-sliders me-1"></i> Filtered results</span>
+        </div>
+
+        <div class="row g-4">
+            {% for p in programs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="program-card h-100">
+                    <div class="program-card-accent"></div>
+                    <div class="program-card-body">
+                        <div class="program-card-top">
+                            <span class="program-pill">{{ p.cutoff_point }} cutoff</span>
+                            <span class="program-icon"><i class="bi bi-mortarboard"></i></span>
+                        </div>
+                        <h5 class="program-title">{{ p.program.programname }}</h5>
+                        <div class="program-meta-block">
+                            <p class="program-meta"><i class="bi bi-building me-2"></i>{{ p.institution.institutionname }}</p>
+                            <p class="program-meta"><i class="bi bi-geo-alt-fill me-2"></i>{{ p.institution.location }}</p>
+                        </div>
+                        <div class="mb-3">
+                            {% if selected_cutoff %}
+                                {% with cutoff_int=selected_cutoff|add:"0" %}
+                                {% if cutoff_int <= p.cutoff_point %}
+                                <span class="badge qualify-badge"><i class="bi bi-check-circle me-1"></i>You Qualify</span>
+                                {% else %}
+                                <span class="badge need-badge"><i class="bi bi-exclamation-circle me-1"></i>Need {{ p.cutoff_point|add:"-"|add:selected_cutoff }} more</span>
+                                {% endif %}
+                                {% endwith %}
+                            {% endif %}
+                            {% with tier=p.admission_tiers.first %}
+                            {% if tier %}
+                            <span class="badge bg-light text-muted ms-1">{{ tier.tier_name }}</span>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        <div class="program-actions">
+                            <button class="btn btn-link p-0 read-more-btn" data-description="{{ p.description }}">
+                                About program
+                            </button>
+                            <button class="btn btn-primary show-career-btn" data-career="{{ p.career_path|default:'' }}">
+                                Career path
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+{% if programs.has_other_pages %}
+<div class="d-flex justify-content-center gap-2 mt-5">
+  {% if programs.has_previous %}<a class="btn btn-outline-primary btn-sm" href="?page={{ programs.previous_page_number }}&cutoff={{ selected_cutoff }}&program={{ selected_program }}">← Previous</a>{% endif %}
+  {% if programs.has_next %}<a class="btn btn-outline-primary btn-sm" href="?page={{ programs.next_page_number }}&cutoff={{ selected_cutoff }}&program={{ selected_program }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+
+        {% else %}
+        <div class="empty-state text-center py-5">
+            <div class="empty-icon"><i class="bi bi-search"></i></div>
+            <h5>No programs found</h5>
+            <p>Try adjusting your filters or selecting a different program.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<div class="modal fade" id="jobDescriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-panel">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobDescriptionModalLabel">About the Program</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="jobDescriptionContent"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.alreadyknow-hero {
+    background: var(--background);
+}
+
+.alreadyknow-badge {
+    display: inline-block;
+    background: var(--background-light);
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+}
+
+.alreadyknow-title {
+    font-size: clamp(2rem, 3.3vw, 3rem);
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.9rem;
+    line-height: 1.2;
+}
+
+.alreadyknow-text {
+    color: var(--text-muted);
+    max-width: 840px;
+    margin: 0 auto;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.filter-panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.filter-panel .form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.45rem;
+}
+
+.filter-panel .input-group-text {
+    background: var(--background);
+    border-right: 0;
+    color: var(--text-muted);
+}
+
+.filter-panel .form-control,
+.filter-panel .form-select {
+    border-radius: 0 12px 12px 0;
+    border-left: 0;
+    color: var(--text);
+}
+
+.filter-panel .btn-primary {
+    background: var(--primary);
+    border: none;
+}
+
+.prereq-panel {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+}
+
+.stream-tag {
+    display: inline-block;
+    background: var(--background-light);
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    margin: 0.15rem;
+}
+
+.prereq-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+.prereq-level {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.prereq-grade {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.7rem;
+}
+
+.results-header { padding-top: 0.5rem; }
+.results-label { margin: 0; color: var(--text-muted); font-size: 0.9rem; }
+.results-title { margin: 0; color: var(--text); font-weight: 700; }
+.results-pill {
+    background: var(--background-light);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+}
+
+.program-card {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+}
+
+.program-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.program-card-accent { height: 4px; background: var(--primary); }
+.program-card-body { padding: 1.2rem; }
+
+.program-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.program-pill {
+    display: inline-block;
+    background: var(--background-light);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.4rem 0.6rem;
+    border-radius: 999px;
+}
+
+.program-icon {
+    width: 38px; height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background);
+    color: var(--primary);
+    border-radius: 10px;
+}
+
+.program-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.75rem; }
+.program-meta-block { min-height: 54px; }
+.program-meta { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.45rem; }
+
+.qualify-badge { background: #d1fae5; color: #065f46; font-size: 0.78rem; font-weight: 600; padding: 0.45rem 0.6rem; border-radius: 999px; }
+.need-badge { background: #fef3c7; color: #92400e; font-size: 0.78rem; font-weight: 600; padding: 0.45rem 0.6rem; border-radius: 999px; }
+
+.program-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.program-actions .btn-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+.program-actions .btn-primary { background: var(--primary); border: none; padding: 0.55rem 0.8rem; }
+.program-actions .btn-primary:hover { background: var(--primary-dark); }
+
+.empty-state {
+    background: #fff;
+    border: 1px dashed var(--border-dark);
+    border-radius: 12px;
+}
+
+.empty-icon {
+    width: 64px; height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.8rem;
+    background: var(--background-light);
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    border-radius: 16px;
+}
+
+.pagination .page-link { border-radius: 8px; margin: 0 0.15rem; color: var(--text-muted); border-color: var(--border); }
+.pagination .page-item.active .page-link { background: var(--primary); border-color: var(--primary); }
+
+.modal-panel .modal-header { background: var(--primary); color: #fff; border-bottom: 0; }
+.modal-panel .btn-close { filter: brightness(0) invert(1); }
+</style>
+
+<script>
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.show-career-btn')) {
+        let button = e.target.closest('.show-career-btn');
+        document.getElementById('jobDescriptionModalLabel').textContent = 'Career Path';
+        document.getElementById('jobDescriptionContent').textContent = button.dataset.career || 'No career path available';
+        openModal(document.getElementById('jobDescriptionModal'));
+    }
+    if (e.target.closest('.read-more-btn')) {
+        let button = e.target.closest('.read-more-btn');
+        document.getElementById('jobDescriptionModalLabel').textContent = 'About the Program';
+        document.getElementById('jobDescriptionContent').textContent = button.dataset.description || 'No description available';
+        openModal(document.getElementById('jobDescriptionModal'));
+    }
+});
+</script>
+
+{% endblock %}

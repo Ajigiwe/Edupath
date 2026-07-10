@@ -1,0 +1,357 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block title %}My Profile — EduPath Ghana{% endblock %}
+
+{% block content %}
+<div class="profile-wrap">
+
+  <!-- HEADER -->
+  <div class="profile-header">
+    <div class="profile-avatar">{{ request.user.username|first|upper }}</div>
+    <div class="profile-head-info">
+      <h2>{{ request.user.username }}</h2>
+      <p>{{ request.user.email }}</p>
+      <span class="member-since">Member since {{ request.user.date_joined|date:"F j, Y" }}</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="profile-tabs">
+    <a href="?tab=profile" class="ptab {% if active_tab == 'profile' %}active{% endif %}">
+      <i class="bi bi-person"></i> Profile
+    </a>
+    <a href="?tab=plan" class="ptab {% if active_tab == 'plan' %}active{% endif %}">
+      <i class="bi bi-layers"></i> My Plan
+    </a>
+    <a href="?tab=payments" class="ptab {% if active_tab == 'payments' %}active{% endif %}">
+      <i class="bi bi-receipt"></i> Payments
+    </a>
+    <a href="?tab=activity" class="ptab {% if active_tab == 'activity' %}active{% endif %}">
+      <i class="bi bi-clock-history"></i> Activity
+    </a>
+    <a href="?tab=security" class="ptab {% if active_tab == 'security' %}active{% endif %}">
+      <i class="bi bi-shield-lock"></i> Security
+    </a>
+  </div>
+
+  <!-- TAB CONTENT -->
+  <div class="profile-content">
+
+    <!-- ========== PROFILE TAB ========== -->
+    {% if active_tab == 'profile' %}
+    <div class="pcard">
+      <h5>Profile Details</h5>
+      <p class="pcard-desc">Update your personal information.</p>
+      <form method="POST" action="{% url 'update_profile' %}">
+        {% csrf_token %}
+        <div class="pf-row">
+          <div class="pf-group">
+            <label><i class="bi bi-person me-1"></i>First Name</label>
+            <input type="text" name="first_name" class="pf-input" value="{{ request.user.first_name }}" placeholder="First name">
+          </div>
+          <div class="pf-group">
+            <label><i class="bi bi-person me-1"></i>Last Name</label>
+            <input type="text" name="last_name" class="pf-input" value="{{ request.user.last_name }}" placeholder="Last name">
+          </div>
+        </div>
+        <div class="pf-group">
+          <label><i class="bi bi-envelope me-1"></i>Email</label>
+          <input type="email" name="email" class="pf-input" value="{{ request.user.email }}" placeholder="your@email.com">
+        </div>
+        <div class="pf-group">
+          <label><i class="bi bi-person-badge me-1"></i>Username</label>
+          <input type="text" class="pf-input" value="{{ request.user.username }}" disabled style="background:#f5f5f4;color:#78716c">
+          <small>Username cannot be changed.</small>
+        </div>
+        <button class="pf-submit"><i class="bi bi-check-lg me-1"></i> Save Changes</button>
+      </form>
+    </div>
+
+    <!-- ========== PLAN TAB ========== -->
+    {% elif active_tab == 'plan' %}
+    <div class="pcard">
+      <h5>My Subscription</h5>
+      <p class="pcard-desc">View your current plan and switch to a different one.</p>
+
+      {% if sub and sub.plan %}
+      <div class="current-plan" style="border-left:4px solid {{ sub.plan.color }}">
+        <div class="cp-top">
+          <div>
+            <strong>{{ sub.plan.name }}</strong>
+            <span class="cp-price">GHS {{ sub.plan.price_monthly }}/mo</span>
+          </div>
+          <span class="cp-badge {% if sub.status == 'ACTIVE' %}cp-active{% elif sub.status == 'TRIAL' %}cp-trial{% elif sub.status == 'CANCELLED' %}cp-cancelled{% else %}cp-other{% endif %}">{{ sub.get_status_display }}</span>
+        </div>
+        {% if sub.plan.description %}
+        <p class="cp-desc">{{ sub.plan.description }}</p>
+        {% endif %}
+        <div class="cp-meta">
+          <span>Started {{ sub.start_date|date:"M j, Y" }}</span>
+          {% if sub.end_date %}<span>Ends {{ sub.end_date|date:"M j, Y" }}</span>{% endif %}
+          {% if sub.auto_renew %}<span>Auto-renew: On</span>{% endif %}
+        </div>
+      </div>
+      {% else %}
+      <div class="no-plan">
+        <i class="bi bi-credit-card" style="font-size:2rem;color:#a8a29e;display:block;margin-bottom:0.5rem"></i>
+        <p>You don't have an active plan.</p>
+      </div>
+      {% endif %}
+
+      <h6 style="margin-top:1.5rem;color:#1c1917;font-weight:600;font-size:0.9rem">Available Plans</h6>
+      <div class="plan-cards">
+        {% for p in plans %}
+        <div class="mini-plan-card" style="border-left:4px solid {{ p.color }}">
+          <div class="mpc-top">
+            <strong>{{ p.name }}</strong>
+            <span class="mpc-price">GHS {{ p.price_monthly }}/mo</span>
+          </div>
+          {% if p.description %}
+          <p class="mpc-desc">{{ p.description|truncatewords:15 }}</p>
+          {% endif %}
+          <a href="{% url 'subscribe' p.slug %}" class="mpc-btn" style="background:{{ p.color }};border-color:{{ p.color }}">{% if sub and sub.plan == p %}Reactivate{% else %}Switch{% endif %}</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ========== PAYMENTS TAB ========== -->
+    {% elif active_tab == 'payments' %}
+    <div class="pcard">
+      <h5>Payment History</h5>
+      <p class="pcard-desc">All your past transactions.</p>
+      {% if payments %}
+      <div class="pay-list">
+        {% for p in payments %}
+        <div class="pay-item">
+          <div class="pay-left">
+            <div class="pay-icon {% if p.status == 'SUCCESS' %}pay-success{% elif p.status == 'PENDING' %}pay-pending{% elif p.status == 'FAILED' %}pay-failed{% else %}pay-other{% endif %}">
+              <i class="bi {% if p.status == 'SUCCESS' %}bi-check-lg{% elif p.status == 'PENDING' %}bi-hourglass{% elif p.status == 'FAILED' %}bi-x{% else %}bi-arrow-repeat{% endif %}"></i>
+            </div>
+            <div class="pay-info">
+              <span class="pay-amount">GHS {{ p.amount|floatformat:"2" }}</span>
+              <span class="pay-meta">
+                {{ p.created_at|date:"M j, Y H:i" }}
+                {% if p.provider == 'PAYSTACK' %} &middot; Paystack{% elif p.provider == 'MANUAL' %} &middot; Manual{% endif %}
+              </span>
+            </div>
+          </div>
+          <div class="pay-right">
+            {% if p.notes %}<span class="pay-note">{{ p.notes|truncatechars:30 }}</span>{% endif %}
+            <span class="pay-status-tag {% if p.status == 'SUCCESS' %}pst-success{% elif p.status == 'PENDING' %}pst-pending{% elif p.status == 'FAILED' %}pst-failed{% else %}pst-other{% endif %}">{{ p.get_status_display }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:2rem 0">
+        <i class="bi bi-receipt" style="font-size:2.5rem;opacity:0.3;color:#78716c"></i>
+        <p style="color:#78716c;margin-top:0.5rem">No payments recorded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ========== ACTIVITY TAB ========== -->
+    {% elif active_tab == 'activity' %}
+    <div class="pcard">
+      <h5>Recent Activity</h5>
+      <p class="pcard-desc">Your recent actions on the platform.</p>
+      {% if activities %}
+      <div class="activity-feed">
+        {% for a in activities %}
+        <div class="act-item">
+          <div class="act-dot {% if a.activity_type == 'SEARCH' %}act-search{% elif a.activity_type == 'VIEW_PROGRAM' %}act-view{% elif a.activity_type == 'PLAN_CHANGE' %}act-plan{% elif a.activity_type == 'LOGIN' %}act-login{% else %}act-other{% endif %}"></div>
+          <div class="act-info">
+            <span class="act-desc">{{ a.description|default:a.get_activity_type_display }}</span>
+            <span class="act-time">{{ a.created_at|date:"M j, Y H:i" }}</span>
+          </div>
+          <span class="act-type-tag">{{ a.get_activity_type_display }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:2rem 0">
+        <i class="bi bi-clock-history" style="font-size:2.5rem;opacity:0.3;color:#78716c"></i>
+        <p style="color:#78716c;margin-top:0.5rem">No activity recorded yet. As you use the site, your activity will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ========== SECURITY TAB ========== -->
+    {% elif active_tab == 'security' %}
+    <div class="pcard">
+      <h5>Change Password</h5>
+      <p class="pcard-desc">Update your login password.</p>
+      <form method="POST" action="{% url 'change_password' %}">
+        {% csrf_token %}
+        <div class="pf-group">
+          <label><i class="bi bi-lock me-1"></i>Current Password</label>
+          <input type="password" name="current_password" class="pf-input" placeholder="Enter current password" required>
+        </div>
+        <div class="pf-row">
+          <div class="pf-group">
+            <label><i class="bi bi-key me-1"></i>New Password</label>
+            <input type="password" name="new_password" class="pf-input" placeholder="At least 6 characters" required>
+          </div>
+          <div class="pf-group">
+            <label><i class="bi bi-key me-1"></i>Confirm Password</label>
+            <input type="password" name="confirm_password" class="pf-input" placeholder="Repeat new password" required>
+          </div>
+        </div>
+        <button class="pf-submit"><i class="bi bi-check-lg me-1"></i> Change Password</button>
+      </form>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.profile-wrap { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Header */
+.profile-header {
+  display: flex; align-items: center; gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.profile-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #1e3a5f; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 700; flex-shrink: 0;
+}
+.profile-head-info h2 { margin: 0; font-size: 1.3rem; font-weight: 700; color: #1c1917; }
+.profile-head-info p { margin: 0.1rem 0 0; font-size: 0.85rem; color: #78716c; }
+.member-since { font-size: 0.72rem; color: #a8a29e; }
+
+/* Tabs */
+.profile-tabs {
+  display: flex; gap: 0.25rem; border-bottom: 1px solid #d6d3d1;
+  margin-bottom: 1.5rem; overflow-x: auto;
+}
+.ptab {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 1rem; font-size: 0.82rem; font-weight: 500;
+  color: #78716c; text-decoration: none; white-space: nowrap;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ptab:hover { color: #1e3a5f; }
+.ptab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; font-weight: 600; }
+
+/* Cards */
+.pcard {
+  background: #fff; border: 1px solid #d6d3d1; border-radius: 12px;
+  padding: 1.5rem;
+}
+.pcard h5 { margin: 0 0 0.15rem; font-size: 1rem; font-weight: 700; color: #1c1917; }
+.pcard-desc { margin: 0 0 1.25rem; font-size: 0.82rem; color: #78716c; }
+
+/* Form */
+.pf-group { margin-bottom: 1rem; }
+.pf-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #1c1917; margin-bottom: 0.3rem; }
+.pf-input {
+  width: 100%; padding: 0.55rem 0.75rem; font-size: 0.88rem;
+  border: 1.5px solid #d6d3d1; border-radius: 8px; color: #1c1917;
+  outline: none; transition: border-color 0.15s; background: #fff;
+}
+.pf-input:focus { border-color: #1e3a5f; }
+.pf-input[disabled] { cursor: not-allowed; }
+.pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pf-group small { display: block; font-size: 0.72rem; color: #a8a29e; margin-top: 0.2rem; }
+.pf-submit {
+  padding: 0.55rem 1.5rem; font-size: 0.84rem; font-weight: 600;
+  border-radius: 8px; background: #1e3a5f; color: #fff; border: none;
+  cursor: pointer; transition: background 0.2s;
+}
+.pf-submit:hover { background: #162d4a; }
+
+/* Current Plan */
+.current-plan {
+  background: #fafaf9; border-radius: 10px; padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+}
+.cp-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+.cp-top strong { font-size: 1rem; color: #1c1917; }
+.cp-price { font-size: 0.82rem; color: #78716c; margin-left: 0.5rem; }
+.cp-badge {
+  font-size: 0.68rem; font-weight: 600; padding: 0.2rem 0.6rem;
+  border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px;
+}
+.cp-active { background: #dcfce7; color: #166534; }
+.cp-trial { background: #fef9c3; color: #854d0e; }
+.cp-cancelled { background: #fee2e2; color: #991b1b; }
+.cp-other { background: #f3e8ff; color: #6b21a8; }
+.cp-desc { font-size: 0.8rem; color: #78716c; margin: 0.3rem 0; }
+.cp-meta { display: flex; gap: 1rem; font-size: 0.72rem; color: #a8a29e; margin-top: 0.3rem; }
+.no-plan { text-align: center; padding: 1.5rem; color: #78716c; }
+
+/* Plan Cards */
+.plan-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+.mini-plan-card {
+  background: #fafaf9; border-radius: 10px; padding: 1rem;
+  display: flex; flex-direction: column;
+}
+.mpc-top { margin-bottom: 0.3rem; }
+.mpc-top strong { font-size: 0.88rem; color: #1c1917; }
+.mpc-price { font-size: 0.75rem; color: #78716c; margin-left: 0.4rem; }
+.mpc-desc { font-size: 0.75rem; color: #a8a29e; margin: 0.2rem 0 0.6rem; flex: 1; }
+.mpc-btn {
+  display: block; text-align: center; padding: 0.4rem; font-size: 0.78rem;
+  font-weight: 600; border-radius: 6px; color: #fff; text-decoration: none;
+  transition: opacity 0.15s;
+}
+.mpc-btn:hover { opacity: 0.9; }
+
+/* Payment List */
+.pay-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.pay-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; background: #fafaf9; border-radius: 8px;
+}
+.pay-left { display: flex; align-items: center; gap: 0.75rem; }
+.pay-icon {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+}
+.pay-success { background: #dcfce7; color: #166534; }
+.pay-pending { background: #fef9c3; color: #854d0e; }
+.pay-failed { background: #fee2e2; color: #991b1b; }
+.pay-other { background: #f3e8ff; color: #6b21a8; }
+.pay-info { display: flex; flex-direction: column; }
+.pay-amount { font-size: 0.88rem; font-weight: 600; color: #1c1917; }
+.pay-meta { font-size: 0.7rem; color: #a8a29e; }
+.pay-right { display: flex; align-items: center; gap: 0.75rem; }
+.pay-note { font-size: 0.72rem; color: #a8a29e; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pay-status-tag { font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; }
+.pst-success { background: #dcfce7; color: #166534; }
+.pst-pending { background: #fef9c3; color: #854d0e; }
+.pst-failed { background: #fee2e2; color: #991b1b; }
+.pst-other { background: #f3e8ff; color: #6b21a8; }
+
+/* Activity Feed */
+.activity-feed { display: flex; flex-direction: column; gap: 0.5rem; }
+.act-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 0.75rem; background: #fafaf9; border-radius: 8px;
+}
+.act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.act-search { background: #1e3a5f; }
+.act-view { background: #c2410c; }
+.act-plan { background: #6b21a8; }
+.act-login { background: #166534; }
+.act-other { background: #a8a29e; }
+.act-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.act-desc { font-size: 0.82rem; font-weight: 500; color: #1c1917; }
+.act-time { font-size: 0.68rem; color: #a8a29e; }
+.act-type-tag { font-size: 0.62rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 999px; background: #e7e5e4; color: #78716c; white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .pf-row { grid-template-columns: 1fr; }
+  .plan-cards { grid-template-columns: 1fr; }
+  .profile-tabs { gap: 0; }
+  .ptab { font-size: 0.78rem; padding: 0.5rem 0.7rem; }
+  .pay-right { flex-direction: column; align-items: flex-end; gap: 0.3rem; }
+}
+</style>
+{% endblock %}

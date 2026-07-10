@@ -1,0 +1,74 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}Departments{% endblock %}
+{% block add_label %}Department{% endblock %}
+{% block search_placeholder %}Search department...{% endblock %}
+
+{% block table_headers %}<th>Department</th><th>Institution</th><th>Actions</th>{% endblock %}
+{% block table_rows %}
+{% for d in departments %}
+<tr>
+  <td class="cell-title">{{ d.name }}</td>
+  <td class="cell-muted">{{ d.institution.institutionname }}</td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn edit-btn" data-id="{{ d.id }}" data-name="{{ d.name }}" data-institution="{{ d.institution.id }}"><i class="bi bi-pencil"></i> Edit</button>
+      <form method="POST" action="{% url 'delete_department' d.id %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" class="action-btn action-btn-danger" onclick="return confirm('Delete this department?')"><i class="bi bi-trash"></i> Delete</button>
+      </form>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="3"><div class="empty-state"><i class="bi bi-folder2-open"></i>No departments added</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block pagination %}
+{% if departments.has_other_pages %}
+<div class="pagination-wrap">
+  {% if departments.has_previous %}<a class="page-btn" href="?page={{ departments.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">← Previous</a>{% endif %}
+  {% if departments.has_next %}<a class="page-btn" href="?page={{ departments.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block add_action %}{% url 'create_department' %}{% endblock %}
+{% block add_modal_title %}Add Department{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Create a new academic department</small>{% endblock %}
+{% block add_form %}
+<div class="mb-3">
+  <label class="form-label"><i class="bi bi-tag me-1"></i>Department Name</label>
+  <input type="text" name="name" class="form-control" placeholder="e.g. Computer Science Department" required>
+  <small style="color:#78716c;font-size:0.75rem">The full name of the department as it appears officially.</small>
+</div>
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-building me-1"></i>Parent Institution</label>
+  <select name="institution" class="form-select" required>
+    <option value="">— Select Institution —</option>
+    {% for i in institutions %}<option value="{{ i.id }}">{{ i.institutionname }}</option>{% endfor %}
+  </select>
+  <small style="color:#78716c;font-size:0.75rem">The institution this department belongs to.</small>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit Department{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update department information</small>{% endblock %}
+{% block edit_form %}
+<div class="mb-3">
+  <label class="form-label"><i class="bi bi-tag me-1"></i>Department Name</label>
+  <input type="text" name="name" id="editName" class="form-control" placeholder="e.g. Computer Science Department" required>
+</div>
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-building me-1"></i>Parent Institution</label>
+  <select name="institution" id="editInstitution" class="form-select" required>
+    <option value="">— Select Institution —</option>
+    {% for i in institutions %}<option value="{{ i.id }}">{{ i.institutionname }}</option>{% endfor %}
+  </select>
+</div>
+{% endblock %}
+{% block edit_init %}
+document.getElementById('editName').value=btn.dataset.name;
+document.getElementById('editInstitution').value=btn.dataset.institution;
+{% endblock %}
+{% block edit_action_prefix %}/departments/{% endblock %}

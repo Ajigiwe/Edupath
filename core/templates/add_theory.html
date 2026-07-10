@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<main class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Header -->
+                <div class="mb-5">
+                    <h1 class="fw-bold display-6 mb-2">
+                        <i class="bi bi-pencil-square text-primary me-3"></i>Add Theory Question
+                    </h1>
+                    <p class="text-muted">Create a new theory question with detailed answer explanations</p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="card border-0 shadow">
+                    <div class="card-body p-5">
+                        <form method="POST" action="{% url 'create_theory' %}">
+                            {% csrf_token %}
+
+                            <!-- Question -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Question</label>
+                                <textarea name="question" class="form-control" rows="4"
+                                    placeholder="Enter the theory question..." required></textarea>
+                                <small class="text-muted">State the question clearly</small>
+                            </div>
+
+                            <!-- Answer -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Answer</label>
+                                <textarea name="answer" class="form-control" rows="6"
+                                    placeholder="Provide a detailed answer or explanation..." required></textarea>
+                                <small class="text-muted">Include key points and detailed explanation</small>
+                            </div>
+
+                            <!-- Divider -->
+                            <hr class="my-5">
+
+                            <!-- Classification Row 1 -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Course</label>
+                                    <select name="course" class="form-select" required>
+                                        <option value="">-- Select Course --</option>
+                                        {% for c in courses %}
+                                        <option value="{{ c.id }}">{{ c.coursename }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Department</label>
+                                    <select name="department" class="form-select" required>
+                                        <option value="">-- Select Department --</option>
+                                        {% for d in departments %}
+                                        <option value="{{ d.id }}">{{ d.name }} - {{ d.institution.institutionname }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Classification Row 2 -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Level Type</label>
+                                    <select name="levelname" class="form-select" required>
+                                        <option value="">-- Select Level Type --</option>
+                                        {% for l in levelnames %}
+                                        <option value="{{ l.id }}">{{ l.levelsname }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Year Level</label>
+                                    <select name="level" class="form-select" required>
+                                        <option value="">-- Select Year --</option>
+                                        {% for l in levels %}
+                                        <option value="{{ l.id }}">Year {{ l.level_number }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-2 mt-5">
+                                <button type="submit" class="btn btn-primary flex-fill fw-bold">
+                                    <i class="bi bi-check-circle me-2"></i>Save Theory Question
+                                </button>
+                                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i>Cancel
+                                </a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

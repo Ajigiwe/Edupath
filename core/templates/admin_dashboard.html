@@ -1,0 +1,358 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+{% block breadcrumb %}Admin / <span>Dashboard</span>{% endblock %}
+{% block add_btn %}{% endblock %}
+{% block search_bar %}{% endblock %}
+{% block table_section %}{% endblock %}
+{% block base_pagination %}{% endblock %}
+
+{% block admin_stats %}
+
+<!-- KPI CARDS -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-left">
+      <div class="kpi-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-book-fill"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_programs }}</span>
+        <span class="kpi-label">Programs</span>
+      </div>
+    </div>
+    <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-left">
+      <div class="kpi-icon" style="background:#fef3e2;color:#c2410c"><i class="bi bi-building-fill"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_institutions }}</span>
+        <span class="kpi-label">Institutions</span>
+      </div>
+    </div>
+    <div class="kpi-trend"><i class="bi bi-dot"></i></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-left">
+      <div class="kpi-icon" style="background:#e6f7e6;color:#166534"><i class="bi bi-people-fill"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_users }}</span>
+        <span class="kpi-label">Users</span>
+      </div>
+    </div>
+    <div class="kpi-trend up"><i class="bi bi-arrow-up-short"></i></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-left">
+      <div class="kpi-icon" style="background:#f3e8ff;color:#6b21a8"><i class="bi bi-credit-card-fill"></i></div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_subscriptions }}</span>
+        <span class="kpi-label">Active Subs</span>
+      </div>
+    </div>
+    <div class="kpi-trend"><i class="bi bi-dot"></i></div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="chart-row">
+  <div class="chart-card chart-card-wide">
+    <div class="chart-header">
+      <h6>Programs by Institution Type</h6>
+      <span class="chart-badge">Bar</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="progInstChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <h6>Programs by Level</h6>
+      <span class="chart-badge">Doughnut</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="progLevelChart" height="220"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 2 -->
+<div class="chart-row">
+  <div class="chart-card">
+    <div class="chart-header">
+      <h6>Users by Plan</h6>
+      <span class="chart-badge">Doughnut</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="planChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="chart-card chart-card-wide">
+    <div class="chart-header">
+      <h6>Monthly Signups</h6>
+      <span class="chart-badge">Line</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="signupChart" height="220"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM ROW: STATUS + QUICK OVERVIEW -->
+<div class="chart-row">
+  <div class="chart-card">
+    <div class="chart-header">
+      <h6>Subscription Status</h6>
+      <span class="chart-badge">Doughnut</span>
+    </div>
+    <div class="chart-body">
+      <canvas id="statusChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="chart-card chart-card-wide">
+    <div class="chart-header">
+      <h6>Quick Overview</h6>
+      <span class="chart-badge">Entities</span>
+    </div>
+    <div class="chart-body">
+      <div class="mini-grid">
+        <div class="mini-item"><span class="mv">{{ total_program_details }}</span><span class="ml">Program Details</span></div>
+        <div class="mini-item"><span class="mv">{{ total_departments }}</span><span class="ml">Departments</span></div>
+        <div class="mini-item"><span class="mv">{{ total_courses }}</span><span class="ml">Courses</span></div>
+        <div class="mini-item"><span class="mv">{{ total_subjects }}</span><span class="ml">Subjects</span></div>
+        <div class="mini-item"><span class="mv">{{ total_streams }}</span><span class="ml">Streams</span></div>
+        <div class="mini-item"><span class="mv">{{ total_levels }}</span><span class="ml">Levels</span></div>
+        <div class="mini-item"><span class="mv">{{ total_interests }}</span><span class="ml">Interests</span></div>
+        <div class="mini-item"><span class="mv">{{ total_ownerships }}</span><span class="ml">Ownerships</span></div>
+        <div class="mini-item"><span class="mv">{{ total_institution_types }}</span><span class="ml">Inst. Types</span></div>
+        <div class="mini-item"><span class="mv">{{ total_school_levels }}</span><span class="ml">School Levels</span></div>
+        <div class="mini-item"><span class="mv">{{ total_theory }}</span><span class="ml">Theory Qs</span></div>
+        <div class="mini-item"><span class="mv">{{ total_mcq }}</span><span class="ml">MCQ Qs</span></div>
+        <div class="mini-item"><span class="mv">GHS {{ total_payments }}</span><span class="ml">Payments</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECENT PROGRAMS -->
+<div class="recent-card">
+  <div class="chart-header">
+    <h6>Recently Added Programs</h6>
+    <span class="chart-badge">Latest</span>
+  </div>
+  <div class="recent-table-wrap">
+    <table class="recent-table">
+      <thead><tr><th>Program</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for p in recent_programs %}
+        <tr><td class="prog-name">{{ p.programname }}</td><td class="prog-date">{{ p.created_at|date:"M j, Y" }}</td></tr>
+        {% empty %}
+        <tr><td colspan="2" class="empty-msg">No programs yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const navy = '#1e3a5f';
+  const palette = ['#1e3a5f','#c2410c','#166534','#6b21a8','#a16207','#0e7490','#be123c','#4f46e5','#059669','#d97706'];
+  const stonePalette = ['#78716c','#a8a29e','#d6d3d1','#57534e','#292524','#1c1917'];
+
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#78716c';
+
+  // Bar chart
+  new Chart(document.getElementById('progInstChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ prog_inst_labels|safe }},
+      datasets: [{
+        label: 'Programs',
+        data: {{ prog_inst_data }},
+        backgroundColor: '#1e3a5f',
+        borderRadius: 4,
+        barPercentage: 0.55,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#e7e5e4' }, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Programs by Level doughnut
+  new Chart(document.getElementById('progLevelChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ prog_level_labels|safe }},
+      datasets: [{
+        data: {{ prog_level_data }},
+        backgroundColor: palette.slice(0, {{ prog_level_data|length }}),
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } }
+      }
+    }
+  });
+
+  // Users by Plan doughnut
+  new Chart(document.getElementById('planChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ plan_labels|safe }},
+      datasets: [{
+        data: {{ plan_data }},
+        backgroundColor: ['#1e3a5f','#c2410c','#166534','#6b21a8','#a16207'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } }
+      }
+    }
+  });
+
+  // Monthly Signups line
+  new Chart(document.getElementById('signupChart'), {
+    type: 'line',
+    data: {
+      labels: {{ signup_labels|safe }},
+      datasets: [{
+        label: 'Signups',
+        data: {{ signup_data }},
+        borderColor: navy,
+        backgroundColor: navy + '15',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: navy,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#e7e5e4' }, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Subscription Status doughnut
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ status_labels|safe }},
+      datasets: [{
+        data: {{ status_data }},
+        backgroundColor: ['#166534','#c2410c','#a8a29e','#6b21a8'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } }
+      }
+    }
+  });
+});
+</script>
+
+<style>
+/* KPI Row */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+.kpi-card {
+  background: #fff; border: 1px solid #d6d3d1; border-radius: 12px;
+  padding: 1.1rem 1.25rem; display: flex; align-items: center;
+  justify-content: space-between; transition: box-shadow 0.2s, transform 0.2s;
+}
+.kpi-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); transform: translateY(-2px); }
+.kpi-left { display: flex; align-items: center; gap: 0.85rem; }
+.kpi-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.kpi-info { display: flex; flex-direction: column; }
+.kpi-value { font-size: 1.5rem; font-weight: 700; color: #1c1917; line-height: 1.2; }
+.kpi-label { font-size: 0.75rem; color: #78716c; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+.kpi-trend { font-size: 1.5rem; color: #a8a29e; line-height: 1; }
+.kpi-trend.up { color: #166534; }
+
+/* Chart Cards */
+.chart-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+.chart-card {
+  background: #fff; border: 1px solid #d6d3d1; border-radius: 12px; overflow: hidden;
+}
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1.15rem 0; 
+}
+.chart-header h6 { margin: 0; font-size: 0.82rem; font-weight: 600; color: #1c1917; }
+.chart-badge {
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 0.2rem 0.5rem; border-radius: 100px; background: #f5f5f4; color: #78716c;
+}
+.chart-body { padding: 0.75rem 1rem 1rem; position: relative; min-height: 200px; }
+.chart-body canvas { width: 100% !important; height: 220px !important; }
+
+/* Mini Grid */
+.mini-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem; padding: 0.25rem 0;
+}
+.mini-item {
+  text-align: center; padding: 0.5rem 0.25rem; border-radius: 8px;
+  background: #f5f5f4; transition: background 0.15s;
+}
+.mini-item:hover { background: #e7e5e4; }
+.mv { display: block; font-size: 1.05rem; font-weight: 700; color: #1c1917; line-height: 1.2; }
+.ml { display: block; font-size: 0.62rem; color: #78716c; font-weight: 500; margin-top: 0.05rem; }
+
+/* Recent Programs */
+.recent-card {
+  background: #fff; border: 1px solid #d6d3d1; border-radius: 12px;
+  padding: 0.85rem 1.15rem 1rem;
+}
+.recent-table-wrap { margin-top: 0.6rem; }
+.recent-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.recent-table thead th {
+  text-align: left; font-size: 0.7rem; font-weight: 600; color: #78716c;
+  text-transform: uppercase; letter-spacing: 0.4px;
+  border-bottom: 2px solid #d6d3d1; padding: 0.55rem 0.5rem;
+}
+.recent-table tbody td { border-bottom: 1px solid #e7e5e4; padding: 0.55rem 0.5rem; color: #1c1917; }
+.recent-table tbody tr:last-child td { border-bottom: 0; }
+.prog-name { font-weight: 500; }
+.prog-date { color: #78716c; font-size: 0.8rem; }
+.empty-msg { text-align: center; color: #a8a29e; padding: 1.5rem 0; }
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .chart-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 575.98px) {
+  .kpi-row { grid-template-columns: 1fr; }
+  .mini-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+{% endblock %}

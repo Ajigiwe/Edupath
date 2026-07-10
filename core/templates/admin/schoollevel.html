@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}School Levels{% endblock %}
+{% block add_label %}School Level{% endblock %}
+{% block search_placeholder %}Search level...{% endblock %}
+
+{% block table_headers %}<th>Level</th><th>Actions</th>{% endblock %}
+{% block table_rows %}
+{% for l in items %}
+<tr>
+  <td class="cell-title">Level {{ l.level_number }}</td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn edit-btn" data-id="{{ l.id }}" data-level="{{ l.level_number }}"><i class="bi bi-pencil"></i> Edit</button>
+      <a href="{% url 'delete_schoollevel' l.id %}" class="action-btn action-btn-danger" onclick="return confirm('Delete this level?')"><i class="bi bi-trash"></i> Delete</a>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="2"><div class="empty-state"><i class="bi bi-folder2-open"></i>No levels added</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block add_action %}{% url 'create_schoollevel' %}{% endblock %}
+{% block add_modal_title %}Add School Level{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Define a new academic level</small>{% endblock %}
+{% block add_form %}
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-bar-chart-steps me-1"></i>Level Number</label>
+  <input type="number" name="level_number" class="form-control" placeholder="e.g. 100, 200, 300" required>
+  <small style="color:#78716c;font-size:0.75rem">The numeric level identifier for this academic year (e.g. 100 = Year 1).</small>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit School Level{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update level number</small>{% endblock %}
+{% block edit_form %}
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-bar-chart-steps me-1"></i>Level Number</label>
+  <input type="number" name="level_number" id="editLevel" class="form-control" placeholder="e.g. 100, 200, 300" required>
+</div>
+{% endblock %}
+{% block edit_init %}document.getElementById('editLevel').value=btn.dataset.level;{% endblock %}
+{% block edit_action_prefix %}/school-levels/{% endblock %}

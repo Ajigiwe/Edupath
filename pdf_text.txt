@@ -1,0 +1,91 @@
+﻿--- Page 1 ---
+EduPath Ghana
+Empowering Senior High School Graduates and University Freshmen in Ghana to Navigate 
+Admission, Academics, and Career Success.
+--- Page 2 ---
+Information & Admission Deficit
+Every year, thousands of Ghanaian SHS graduates face 
+intense rejection from universities like UG and KNUST 
+simply because they lack clear, structured information 
+regarding required aggregate grades and specific cut -off 
+points.Academic & Resource Scarcity
+Even after securing entry, enrolled students lack accessible 
+study materials (syllabi, past questions, research guides). 
+They are forced to start blind without adequate resources 
+to learn ahead or construct clear career plans.The transition problem in Ghana
+--- Page 3 ---
+WASSCE Candidates: Over 400k students annually trying to 
+decode competitive aggregates (e.g. KNUST Medicine requires 
+aggregate 6).
+University Freshmen: Students entering higher learning without 
+pre-study resources or foundational course outlines.
+Anxious Parents: Financially burdened guardians funding 
+speculative admissions without strategic predictability.
+Who is affected by this crisis?
+
+--- Page 4 ---
+Cut -Off Calculator
+Instantly calculates admission eligibility using 
+exact school grading equations.
+Career Pathfinder
+Maps desired careers back to specific 
+university program alternatives in Ghana, 
+aligned with student performance.
+Academic Hub
+Curated repository containing past exams, 
+standard thesis formats, and introductory 
+research guidance.
+Our python -powered platform features
+--- Page 5 ---
+Free Tier Users: Secondary school graduates and university 
+freshmen accessing basic admission calculators and public 
+forum spaces.
+Premium Paying Customers: Students and supportive parents 
+who pay for targeted exam mock sets and live career 
+mentorship.B2B School Partnerships: High schools and private colleges 
+subscribing to modern aggregate analytics and showcase 
+services.
+Identifying our core customers
+--- Page 6 ---
+Our diversified revenue model
+
+--- Page 7 ---
+Expansion in paid subscriptions and nationwide high school B2B contracts will serve as primary scale levers across critical u rban hubs in Ghana.Year 1 (Pilot) GHÔéÁ15,000
+Year 2 
+(Launch)GHÔéÁ45,000
+Year 3 
+(Scale)GHÔéÁ120,000
+Year 4 
+(Mature)GHÔéÁ350,000Projected revenue growth
+--- Page 8 ---
+Q1: SHS Outreach
+Conduct informational roadshows 
+across major high schools in Accra 
+and Kumasi.Q2: Social Campaign
+Partner with micro -influencers and 
+student content creators on TikTok 
+& WhatsApp.
+Q3: Campus Alliances
+Partner with University Student 
+Representative Councils (SRCs) 
+during freshers orientation.Q4: SEO & Blogs
+Provide comprehensive online 
+aggregate lookup tables to drive 
+steady, high -intent Google search 
+traffic.Our go -to-market timeline
+--- Page 9 ---
+Gamified Coursework Paths: Keep students motivated by tracking pre -university course completion with digital 
+credential badges.
+Interactive Community Forums: Tailor discussions based on target universities (e.g., KNUST Engineering or UG 
+Legon Business) to maintain active peer dialogue.
+Continuous Alumni Mentoring: Connect junior students with experienced seniors on campus for real -time tips, 
+syllabi review, and tutoring.
+Dynamic Resource Updating: Constantly refresh past questions and project guides, expanding user lifespan from 
+entry up through graduation.
+Our customer retention mechanisms
+--- Page 10 ---
+Questions & Answers
+Join us in guiding the next generation of Ghanaian scholars towards 
+university and career milestones.
+www.edupathghana.com
+

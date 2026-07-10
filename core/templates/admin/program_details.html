@@ -1,0 +1,202 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}Program Details{% endblock %}
+{% block add_label %}Program Detail{% endblock %}
+{% block search_placeholder %}Search program...{% endblock %}
+
+{% block admin_stats %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-file-text-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ details.paginator.count }}</span><span class="stat-mini-label">Total Details</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block table_headers %}<th>Program</th><th>Institution</th><th>Cutoff</th><th>Score</th><th>Chances</th><th>Actions</th>{% endblock %}
+{% block table_rows %}
+{% for d in details %}
+<tr>
+  <td class="cell-title">{{ d.program.programname }}</td>
+  <td class="cell-muted">{{ d.institution.institutionname }}</td>
+  <td>{{ d.cutoff_point }}</td>
+  <td>{{ d.job_score }}%</td>
+  <td>
+    {% if d.job_chances == "HIGH" %}<span class="tag" style="background:#dcfce7;color:#166534">High</span>
+    {% elif d.job_chances == "MEDIUM" %}<span class="tag" style="background:#fef9c3;color:#854d0e">Medium</span>
+    {% else %}<span class="tag" style="background:#fee2e2;color:#991b1b">Low</span>{% endif %}
+  </td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn view-btn"
+        data-description="{{ d.description|default:'' }}"
+        data-career="{{ d.career_path|default:'' }}"><i class="bi bi-eye"></i> View</button>
+      <button class="action-btn edit-btn"
+        data-id="{{ d.id }}"
+        data-program="{{ d.program.id }}"
+        data-institution="{{ d.institution.id }}"
+        data-cutoff="{{ d.cutoff_point }}"
+        data-description="{{ d.description|default:'' }}"
+        data-career="{{ d.career_path|default:'' }}"
+        data-score="{{ d.job_score|default:'' }}"
+        data-chances="{{ d.job_chances|default:'MEDIUM' }}"><i class="bi bi-pencil"></i> Edit</button>
+      <a href="{% url 'delete_program_detail' d.id %}" class="action-btn action-btn-danger"
+        onclick="return confirm('Delete this detail?')"><i class="bi bi-trash"></i> Delete</a>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="6"><div class="empty-state"><i class="bi bi-folder2-open"></i>No details added</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block pagination %}
+{% if details.has_other_pages %}
+<div class="pagination-wrap">
+  {% if details.has_previous %}<a class="page-btn" href="?page={{ details.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">← Previous</a>{% endif %}
+  {% if details.has_next %}<a class="page-btn" href="?page={{ details.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block add_modal_size %}modal-lg{% endblock %}
+{% block edit_modal_size %}modal-lg{% endblock %}
+{% block add_action %}{% url 'create_program_detail' %}{% endblock %}
+{% block add_modal_title %}Add Program Detail{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Link a program to an institution with admission details</small>{% endblock %}
+{% block add_form %}
+<div class="row g-3">
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-book me-1"></i>Program</label>
+    <select name="program" class="form-select" required>
+      <option value="">— Select Program —</option>
+      {% for p in programs %}<option value="{{ p.id }}">{{ p.programname }}</option>{% endfor %}
+    </select>
+    <small style="color:#78716c;font-size:0.75rem">The academic programme.</small>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-building me-1"></i>Institution</label>
+    <select name="institution" class="form-select" required>
+      <option value="">— Select Institution —</option>
+      {% for i in institutions %}<option value="{{ i.id }}">{{ i.institutionname }}</option>{% endfor %}
+    </select>
+    <small style="color:#78716c;font-size:0.75rem">The institution offering this programme.</small>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-scissors me-1"></i>Cutoff Point</label>
+    <input type="number" name="cutoff_point" class="form-control" placeholder="e.g. 18" min="1" max="36">
+    <small style="color:#78716c;font-size:0.75rem">Minimum WASSCE aggregate cutoff (lower = more competitive).</small>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-graph-up me-1"></i>Job Score (%)</label>
+    <input type="number" name="job_score" class="form-control" placeholder="e.g. 80" min="0" max="100">
+    <small style="color:#78716c;font-size:0.75rem">Employment outcome score out of 100.</small>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-bar-chart me-1"></i>Competitiveness</label>
+    <select name="job_chances" class="form-select">
+      <option value="HIGH">High Competitive</option>
+      <option value="MEDIUM" selected>Medium Competitive</option>
+      <option value="LOW">Low Competitive</option>
+    </select>
+    <small style="color:#78716c;font-size:0.75rem">How competitive is this program at this institution?</small>
+  </div>
+  <div class="col-12">
+    <label class="form-label"><i class="bi bi-info-circle me-1"></i>Program Description</label>
+    <textarea name="description" class="form-control" placeholder="Brief overview of what this programme covers…" rows="3"></textarea>
+    <small style="color:#78716c;font-size:0.75rem">A short summary of the programme content and focus areas.</small>
+  </div>
+  <div class="col-12">
+    <label class="form-label"><i class="bi bi-briefcase me-1"></i>Career Path</label>
+    <textarea name="career_path" class="form-control" placeholder="e.g. Software Engineer, Data Analyst, IT Consultant" rows="3"></textarea>
+    <small style="color:#78716c;font-size:0.75rem">Comma-separated list of typical career outcomes for graduates.</small>
+  </div>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit Program Detail{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update programme admission details</small>{% endblock %}
+{% block edit_form %}
+<div class="row g-3">
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-book me-1"></i>Program</label>
+    <select name="program" id="editProgram" class="form-select" required>
+      <option value="">— Select Program —</option>
+      {% for p in programs %}<option value="{{ p.id }}">{{ p.programname }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-building me-1"></i>Institution</label>
+    <select name="institution" id="editInstitution" class="form-select" required>
+      <option value="">— Select Institution —</option>
+      {% for i in institutions %}<option value="{{ i.id }}">{{ i.institutionname }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-scissors me-1"></i>Cutoff Point</label>
+    <input type="number" name="cutoff_point" id="editCutoff" class="form-control" placeholder="e.g. 18" min="1" max="36">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-graph-up me-1"></i>Job Score (%)</label>
+    <input type="number" name="job_score" id="editScore" class="form-control" placeholder="e.g. 80" min="0" max="100">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label"><i class="bi bi-bar-chart me-1"></i>Competitiveness</label>
+    <select name="job_chances" id="editChances" class="form-select">
+      <option value="HIGH">High Competitive</option>
+      <option value="MEDIUM">Medium Competitive</option>
+      <option value="LOW">Low Competitive</option>
+    </select>
+  </div>
+  <div class="col-12">
+    <label class="form-label"><i class="bi bi-info-circle me-1"></i>Program Description</label>
+    <textarea name="description" id="editDescription" class="form-control" placeholder="Brief overview of what this programme covers…" rows="3"></textarea>
+  </div>
+  <div class="col-12">
+    <label class="form-label"><i class="bi bi-briefcase me-1"></i>Career Path</label>
+    <textarea name="career_path" id="editCareer" class="form-control" placeholder="e.g. Software Engineer, Data Analyst, IT Consultant" rows="3"></textarea>
+  </div>
+</div>
+{% endblock %}
+{% block edit_init %}
+document.getElementById('editProgram').value=btn.dataset.program;
+document.getElementById('editInstitution').value=btn.dataset.institution;
+document.getElementById('editCutoff').value=btn.dataset.cutoff||'';
+document.getElementById('editDescription').value=btn.dataset.description||'';
+document.getElementById('editCareer').value=btn.dataset.career||'';
+document.getElementById('editScore').value=btn.dataset.score||'';
+document.getElementById('editChances').value=btn.dataset.chances||'MEDIUM';
+{% endblock %}
+{% block edit_action_prefix %}/program-details/{% endblock %}
+
+{% block admin_scripts %}
+<div class="modal fade admin-modal" id="viewModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h5 class="modal-title">Programme Details</h5>
+        <small style="opacity:0.75;font-weight:400">Full description and career path</small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto">
+      <h6 style="font-weight:700;font-size:0.82rem;color:#1c1917;margin-bottom:0.4rem"><i class="bi bi-info-circle me-1" style="color:#1e3a5f"></i>Description</h6>
+      <p id="viewDescription" style="color:#78716c;line-height:1.7;font-size:0.88rem"></p>
+      <hr>
+      <h6 style="font-weight:700;font-size:0.82rem;color:#1c1917;margin-bottom:0.4rem"><i class="bi bi-briefcase me-1" style="color:#1e3a5f"></i>Career Path</h6>
+      <p id="viewCareer" style="color:#78716c;line-height:1.7;font-size:0.88rem"></p>
+    </div>
+    <div class="modal-footer d-flex justify-content-end">
+      <button type="button" class="btn btn-sm" style="color:#78716c;border:1.5px solid #d6d3d1;border-radius:8px;font-weight:600" data-bs-dismiss="modal">Close</button>
+    </div>
+  </div></div>
+</div>
+<script>
+document.addEventListener('click',function(e){
+  var vbtn=e.target.closest('.view-btn');
+  if(!vbtn)return;
+  document.getElementById('viewDescription').textContent=vbtn.dataset.description||'No description available.';
+  document.getElementById('viewCareer').textContent=vbtn.dataset.career||'No career path listed.';
+  openModal(document.getElementById('viewModal'));
+});
+</script>
+{% endblock %}

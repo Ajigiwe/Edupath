@@ -1,0 +1,125 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}Programs{% endblock %}
+{% block add_label %}Program{% endblock %}
+{% block search_placeholder %}Search programs...{% endblock %}
+
+{% block admin_stats %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-book-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_programs }}</span><span class="stat-mini-label">Total Programs</span></div>
+  </div>
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#fef3e2;color:#c2410c"><i class="bi bi-building-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_with_institutions }}</span><span class="stat-mini-label">With Institutions</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block table_headers %}<th style="width:32%">Program</th><th style="width:16%">Institutions</th><th style="width:20%">Prerequisites</th><th style="width:12%">Created</th><th style="width:20%">Actions</th>{% endblock %}
+{% block table_rows %}
+{% for program in programs %}
+<tr>
+  <td>
+    <div class="cell-title">{{ program.programname }}</div>
+    <div class="d-flex flex-wrap gap-1 mt-1">
+      {% for i in program.interests.all %}
+      <span class="tag">{{ i.name }}</span>
+      {% endfor %}
+    </div>
+  </td>
+  <td>
+    <div class="d-flex align-items-center gap-2">
+      <span class="chip-num">{{ program.institution_count }}</span>
+      <span class="cell-muted">institution{{ program.institution_count|pluralize }}</span>
+    </div>
+  </td>
+  <td>
+    <div class="d-flex align-items-center gap-2">
+      <span class="chip-num chip-num-alt">{{ program.prereq_count }}</span>
+      <span class="cell-muted">subject{{ program.prereq_count|pluralize }}</span>
+    </div>
+    {% if program.prereq_count > 0 %}
+    <div class="cell-muted mt-1" style="font-size:0.72rem">
+      {% for p in program.prerequisites.all|slice:":3" %}{{ p.subject.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if program.prereq_count > 3 %}…{% endif %}
+    </div>
+    {% endif %}
+  </td>
+  <td class="cell-muted">{{ program.created_at|date:"M j, Y" }}</td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn edit-btn"
+        data-id="{{ program.id }}"
+        data-title="{{ program.programname }}"
+        data-interests="{% for i in program.interests.all %}{{ i.id }},{% endfor %}"><i class="bi bi-pencil"></i> Edit</button>
+      <form method="POST" action="{% url 'delete_program' program.id %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit" class="action-btn action-btn-danger" onclick="return confirm('Delete this program?')"><i class="bi bi-trash"></i> Delete</button>
+      </form>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="5"><div class="empty-state"><i class="bi bi-folder2-open"></i>No programs added</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block pagination %}
+{% if programs.has_other_pages %}
+<div class="pagination-wrap">
+  {% if programs.has_previous %}<a class="page-btn" href="?page={{ programs.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">← Previous</a>{% endif %}
+  {% if programs.has_next %}<a class="page-btn" href="?page={{ programs.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block add_action %}{% url 'create_program' %}{% endblock %}
+{% block add_modal_title %}Add Program{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Create a new academic programme</small>{% endblock %}
+{% block add_form %}
+<div class="mb-3">
+  <label class="form-label"><i class="bi bi-book me-1"></i>Program Title</label>
+  <input type="text" name="title" class="form-control" placeholder="e.g. Bachelor of Science in Computer Science" required>
+  <small style="color:#78716c;font-size:0.75rem">The official name of the academic programme.</small>
+</div>
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-heart me-1"></i>Related Interests</label>
+  <div class="checkbox-grid">
+    {% for i in interests %}
+    <label class="checkbox-label">
+      <input class="form-check-input" type="checkbox" name="interests" value="{{ i.id }}">
+      <span>{{ i.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+  <small style="color:#78716c;font-size:0.75rem">Select all career interest categories this program relates to.</small>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit Program{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update program information</small>{% endblock %}
+{% block edit_form %}
+<div class="mb-3">
+  <label class="form-label"><i class="bi bi-book me-1"></i>Program Title</label>
+  <input type="text" name="title" id="editTitle" class="form-control" placeholder="e.g. Bachelor of Science in Computer Science" required>
+</div>
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-heart me-1"></i>Related Interests</label>
+  <div class="checkbox-grid">
+    {% for i in interests %}
+    <label class="checkbox-label">
+      <input class="form-check-input edit-interest" type="checkbox" name="interests" value="{{ i.id }}">
+      <span>{{ i.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block edit_init %}
+document.getElementById('editTitle').value=btn.dataset.title;
+document.querySelectorAll('.edit-interest').forEach(function(cb){cb.checked=false;});
+(btn.dataset.interests||'').split(',').forEach(function(v){
+  if(v){var el=document.querySelector('.edit-interest[value="'+v+'"]');if(el)el.checked=true;}
+});
+{% endblock %}
+{% block edit_action_prefix %}/programs/{% endblock %}

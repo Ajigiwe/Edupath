@@ -1,0 +1,724 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% load core_extras %}
+{% block content %}
+
+<section class="findpath-hero">
+    <div class="container py-5">
+        <div class="row justify-content-center text-center">
+            <div class="col-xl-9">
+                <span class="findpath-badge">
+                    {% if step == '4' %}Your Results{% elif step == '3' %}Step 3 of 3{% elif step == '2' %}Step 2 of 3{% else %}Step 1 of 3{% endif %}
+                </span>
+                <h1 class="findpath-title">Discover programs that fit your future</h1>
+                <p class="findpath-text">
+                    Tell us about your SHS background and we'll match you with the right university programmes.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container pb-5">
+    <div class="row justify-content-center mt-4">
+        <div class="col-xl-10">
+
+            {% if step == '1' or not step %}
+            {# ─── STEP 1: CHOOSE SHS STREAM ─── #}
+            <form method="GET" class="wizard-step">
+                <input type="hidden" name="step" value="2">
+                <div class="wizard-card">
+                    <h4 class="wizard-step-title">Which SHS programme did you pursue?</h4>
+                    <p class="wizard-step-desc">Select your stream so we can match you with programmes that build on your foundation.</p>
+                    <div class="row g-3 mt-2">
+                        {% for s in shs_streams %}
+                        <div class="col-md-3 col-6">
+                            <label class="stream-card">
+                                <input type="radio" name="stream" value="{{ s.slug }}" class="stream-radio" required>
+                                <div class="stream-card-body">
+                                    <div class="stream-icon">
+                                        {% if 'science' in s.slug or 'stem' in s.slug %}
+                                        <i class="bi bi-rocket-takeoff"></i>
+                                        {% elif 'arts' in s.slug %}
+                                        <i class="bi bi-book"></i>
+                                        {% elif 'business' in s.slug %}
+                                        <i class="bi bi-briefcase"></i>
+                                        {% elif 'technical' in s.slug %}
+                                        <i class="bi bi-tools"></i>
+                                        {% elif 'visual' in s.slug %}
+                                        <i class="bi bi-palette"></i>
+                                        {% elif 'home' in s.slug %}
+                                        <i class="bi bi-house-heart"></i>
+                                        {% elif 'agric' in s.slug %}
+                                        <i class="bi bi-tree"></i>
+                                        {% else %}
+                                        <i class="bi bi-mortarboard"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="stream-name">{{ s.name }}</h6>
+                                </div>
+                            </label>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center text-muted">No SHS streams configured yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="wizard-nav mt-4 text-end d-none">
+                    <button type="submit" class="btn btn-primary px-4">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                </div>
+                <p class="text-center mt-3 mb-0"><small class="text-white-50">Click any stream above to continue</small></p>
+            </form>
+
+            {% elif step == '2' %}
+            {# ─── STEP 2: ENTER GRADES ─── #}
+            <form method="GET" class="wizard-step">
+                <input type="hidden" name="step" value="3">
+                <input type="hidden" name="stream" value="{{ selected_stream.slug }}">
+                <div class="wizard-card">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="stream-badge">{{ selected_stream.name }}</span>
+                        <h4 class="wizard-step-title mb-0">Enter your WASSCE grades</h4>
+                    </div>
+                    <p class="wizard-step-desc">Select the grade you achieved for each subject below.</p>
+                    <div class="row g-3 mt-2" id="grade-fields">
+                        {% for subj in stream_subjects_json|get_item:selected_stream.slug %}
+                        <div class="col-md-4 col-sm-6">
+                            <label class="grade-field">
+                                <span class="grade-subject-name">{{ subj.name }}</span>
+                                <select name="grade_{{ subj.name }}" class="form-select form-select-sm mt-1" required>
+                                    <option value="">—</option>
+                                    <option value="1" {% if grades|get_item:subj.name == '1' %}selected{% endif %}>A1 (1)</option>
+                                    <option value="2" {% if grades|get_item:subj.name == '2' %}selected{% endif %}>B2 (2)</option>
+                                    <option value="3" {% if grades|get_item:subj.name == '3' %}selected{% endif %}>B3 (3)</option>
+                                    <option value="4" {% if grades|get_item:subj.name == '4' %}selected{% endif %}>C4 (4)</option>
+                                    <option value="5" {% if grades|get_item:subj.name == '5' %}selected{% endif %}>C5 (5)</option>
+                                    <option value="6" {% if grades|get_item:subj.name == '6' %}selected{% endif %}>C6 (6)</option>
+                                    <option value="7" {% if grades|get_item:subj.name == '7' %}selected{% endif %}>D7 (7)</option>
+                                    <option value="8" {% if grades|get_item:subj.name == '8' %}selected{% endif %}>E8 (8)</option>
+                                    <option value="9" {% if grades|get_item:subj.name == '9' %}selected{% endif %}>F9 (9)</option>
+                                </select>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="wizard-nav mt-4 d-flex justify-content-between">
+                    <a href="?step=1" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+                    <button type="submit" class="btn btn-primary px-4">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                </div>
+            </form>
+
+            {% elif step == '3' %}
+            {# ─── STEP 3: INTERESTS ─── #}
+            <form method="GET" class="wizard-step">
+                <input type="hidden" name="step" value="4">
+                <input type="hidden" name="stream" value="{{ selected_stream.slug }}">
+                {% for key, val in grades.items %}
+                <input type="hidden" name="grade_{{ key }}" value="{{ val }}">
+                {% endfor %}
+                <div class="wizard-card">
+                    <h4 class="wizard-step-title">What are you interested in?</h4>
+                    <p class="wizard-step-desc">Select one or more areas that excite you.</p>
+                    <div class="row g-3 mt-2">
+                        {% for i in interests %}
+                        <div class="col-md-4 col-sm-6">
+                            <label class="interest-card">
+                                <input type="checkbox" name="interest" value="{{ i.id }}" class="interest-checkbox"
+                                    {% if i.id in selected_interests %}checked{% endif %}>
+                                <div class="interest-card-body">
+                                    <i class="bi bi-star"></i>
+                                    <span>{{ i.name }}</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="wizard-nav mt-4 d-flex justify-content-between">
+                    <a href="?step=2&stream={{ selected_stream.slug }}{% for key, val in grades.items %}&grade_{{ key }}={{ val }}{% endfor %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+                    <button type="submit" class="btn btn-primary px-4">Find My Path <i class="bi bi-search ms-1"></i></button>
+                </div>
+            </form>
+
+            {% elif step == '4' %}
+            {# ─── STEP 4: RESULTS ─── #}
+            <div class="results-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4 reveal">
+                <div>
+                    <p class="results-label">Your personalized matches</p>
+                    <h4 class="results-title">{{ results.primary|length }} primary recommendations</h4>
+                </div>
+                <a href="?step=1" class="btn btn-outline-secondary btn-sm">Start over</a>
+            </div>
+
+            {% if results.primary %}
+            <h5 class="mb-3"><span class="badge bg-success me-2">Excellent & Good Fit</span></h5>
+            <div class="row g-4 mb-5">
+                {% for r in results.primary %}
+                <div class="col-md-6 col-lg-4 reveal stagger-{{ forloop.counter }}">
+                    <div class="program-card h-100">
+                        <div class="program-card-accent"></div>
+                        <div class="program-card-body">
+                            <div class="program-card-top">
+                                <span class="program-pill">{{ r.aggregate }} aggregate</span>
+                                <span class="score-badge score-{{ r.category.0|lower }}">{{ r.category.0 }}</span>
+                            </div>
+                            <h5 class="program-title">{{ r.program.programname }}</h5>
+                            <div class="program-meta-block">
+                                {% if r.program_details %}
+                                <p class="program-meta">
+                                    <i class="bi bi-building me-2"></i>{{ r.program_details.institution.institutionname }}
+                                </p>
+                                <p class="program-meta">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>{{ r.program_details.institution.location }}
+                                </p>
+                                {% if r.tier %}
+                                <p class="program-meta">
+                                    <i class="bi bi-tag me-2"></i>{{ r.tier.tier_name }} (≤{{ r.tier.cutoff_aggregate }})
+                                </p>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="fit-bar mt-2 mb-3">
+                                <div class="fit-bar-label">Fit score: {{ r.fit_score|floatformat:0 }}%</div>
+                                <div class="fit-bar-track">
+                                    <div class="fit-bar-fill" style="width: {{ r.fit_score|floatformat:0 }}%"></div>
+                                </div>
+                            </div>
+                            <div class="subject-check-list">
+                                {% for d in r.subject_details %}
+                                <span class="subject-check-item {% if d.met %}met{% else %}missed{% endif %}">
+                                    <i class="bi bi-{% if d.met %}check-circle-fill{% else %}x-circle-fill{% endif %}"></i>
+                                    {{ d.subject }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% if r.alternatives %}
+                            <div class="mt-3 pt-2 border-top">
+                                <small class="text-muted fw-semibold">Alternative pathways:</small>
+                                {% for a in r.alternatives %}
+                                <div class="alt-pathway">{{ a.get_pathway_type_display }} — {{ a.description|truncatewords:15 }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if results.stretch %}
+            <h5 class="mb-3"><span class="badge bg-warning text-dark me-2">Stretch Programmes</span></h5>
+            <div class="row g-4 mb-5">
+                {% for r in results.stretch %}
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="program-card h-100 border-warning">
+                        <div class="program-card-accent bg-warning"></div>
+                        <div class="program-card-body">
+                            <div class="program-card-top">
+                                <span class="program-pill">{{ r.aggregate }} aggregate</span>
+                                <span class="score-badge score-challenging">{{ r.category.0 }}</span>
+                            </div>
+                            <h5 class="program-title">{{ r.program.programname }}</h5>
+                            <div class="fit-bar mt-2 mb-3">
+                                <div class="fit-bar-label">Fit score: {{ r.fit_score|floatformat:0 }}%</div>
+                                <div class="fit-bar-track">
+                                    <div class="fit-bar-fill bg-warning" style="width: {{ r.fit_score|floatformat:0 }}%"></div>
+                                </div>
+                            </div>
+                            {% if r.missing_required %}
+                            <div class="subject-check-list">
+                                <small class="text-danger fw-semibold">Missing prerequisites:</small>
+                                {% for d in r.missing_required %}
+                                <span class="subject-check-item missed">
+                                    <i class="bi bi-x-circle-fill"></i> {{ d.subject }} (need {{ d.min_grade }})
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if r.below_cutoff %}
+                            <p class="small text-warning mt-2 mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Your aggregate may be above the cutoff for this programme.
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if results.not_viable %}
+            <h5 class="mb-3"><span class="badge bg-secondary me-2">Not Viable</span></h5>
+            <div class="row g-4 mb-5">
+                {% for r in results.not_viable %}
+                <div class="col-md-6 col-lg-4 reveal">
+                    <div class="program-card h-100 opacity-75">
+                        <div class="program-card-accent bg-secondary"></div>
+                        <div class="program-card-body">
+                            <h5 class="program-title">{{ r.program.programname }}</h5>
+                            <p class="small text-danger mb-2"><i class="bi bi-slash-circle me-1"></i>{{ r.reason }}</p>
+                            <p class="small text-muted mb-0">{{ r.suggestion }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not results.primary and not results.stretch and not results.not_viable %}
+            <div class="empty-state text-center py-5 reveal">
+                <div class="empty-icon"><i class="bi bi-search"></i></div>
+                <h5>No results found</h5>
+                <p>We couldn't find any matches. Try selecting a different stream or interests.</p>
+                <a href="?step=1" class="btn btn-primary mt-2">Start over</a>
+            </div>
+            {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+<style>
+.findpath-hero {
+    background: var(--primary);
+    color: #fff;
+}
+
+.findpath-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+}
+
+.findpath-title {
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.9rem;
+    line-height: 1.2;
+}
+
+.findpath-text {
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 820px;
+    margin: 0 auto;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.wizard-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.wizard-step-title {
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+}
+
+.wizard-step-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.stream-card {
+    display: block;
+    cursor: pointer;
+}
+
+.stream-radio {
+    display: none;
+}
+
+.stream-card-body {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.stream-radio:checked + .stream-card-body {
+    border-color: var(--primary);
+    background: var(--background-light);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+}
+
+.stream-card-body:hover {
+    border-color: var(--primary);
+}
+
+.stream-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    background: var(--background);
+    color: var(--primary);
+    border-radius: 12px;
+    font-size: 1.3rem;
+}
+
+.stream-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.stream-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.grade-field {
+    display: block;
+}
+
+.grade-subject-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.grade-field .form-select {
+    border-radius: 8px;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.interest-card {
+    display: block;
+    cursor: pointer;
+}
+
+.interest-checkbox {
+    display: none;
+}
+
+.interest-card-body {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.interest-checkbox:checked + .interest-card-body {
+    border-color: var(--primary);
+    background: var(--background-light);
+}
+
+.interest-card-body:hover {
+    border-color: var(--primary);
+}
+
+.interest-card-body i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.wizard-nav .btn-primary {
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.wizard-nav .btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.results-header {
+    padding-top: 1rem;
+}
+
+.results-label {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.results-title {
+    margin: 0;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.program-card {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+}
+
+.program-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.program-card-accent {
+    height: 4px;
+    background: var(--primary);
+}
+
+.program-card-body {
+    padding: 1.2rem;
+}
+
+.program-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.program-pill {
+    display: inline-block;
+    background: var(--background-light);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.4rem 0.6rem;
+    border-radius: 999px;
+}
+
+.score-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-excellent { background: #d1fae5; color: #065f46; }
+.score-good { background: #dbeafe; color: #1e40af; }
+.score-moderate { background: #fef3c7; color: #92400e; }
+.score-challenging { background: #ffedd5; color: #9a3412; }
+.score-not_viable { background: #f3f4f6; color: #6b7280; }
+
+.program-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+}
+
+.program-meta-block {
+    min-height: 54px;
+}
+
+.program-meta {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+    line-height: 1.5;
+}
+
+.fit-bar-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.fit-bar-track {
+    height: 6px;
+    background: var(--background);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.fit-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+.subject-check-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.subject-check-item {
+    font-size: 0.72rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.subject-check-item.met { color: #065f46; }
+.subject-check-item.missed { color: #dc2626; }
+
+.alt-pathway {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.2rem 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.empty-state {
+    background: #fff;
+    border: 1px dashed var(--border-dark);
+    border-radius: 12px;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.8rem;
+    background: var(--background-light);
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    border-radius: 16px;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.stagger-1 { transition-delay: 0.05s; }
+.stagger-2 { transition-delay: 0.1s; }
+.stagger-3 { transition-delay: 0.15s; }
+.stagger-4 { transition-delay: 0.2s; }
+.stagger-5 { transition-delay: 0.25s; }
+.stagger-6 { transition-delay: 0.3s; }
+
+.wizard-step.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.wizard-step {
+    animation: fadeInUp 0.35s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Step 1: auto-submit on stream card click
+    document.querySelectorAll('.stream-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            const radio = this.querySelector('.stream-radio');
+            if (radio) {
+                radio.checked = true;
+                const form = radio.closest('form');
+                form.classList.add('fade-out');
+                setTimeout(function () { form.submit(); }, 200);
+            }
+        });
+    });
+
+    // Step 2: validate all selects filled before submit
+    var gradeForm = document.querySelector('form input[name="step"][value="3"]');
+    if (gradeForm) {
+        var form = gradeForm.closest('form');
+        form.addEventListener('submit', function (e) {
+            var missing = 0;
+            form.querySelectorAll('select[required]').forEach(function (sel) {
+                if (!sel.value) missing++;
+            });
+            if (missing > 0) {
+                e.preventDefault();
+                var msg = document.getElementById('grade-warning');
+                if (!msg) {
+                    msg = document.createElement('div');
+                    msg.id = 'grade-warning';
+                    msg.className = 'alert alert-warning mt-3 py-2 small';
+                    msg.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>Please select a grade for each subject before continuing.';
+                    form.querySelector('.wizard-card').after(msg);
+                }
+                msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    // Step 3: show selected interests count
+    var checkboxes = document.querySelectorAll('.interest-checkbox');
+    if (checkboxes.length > 0) {
+        var header = document.querySelector('.wizard-card .wizard-step-title');
+        if (header) {
+            var badge = document.createElement('span');
+            badge.className = 'interest-count-label badge bg-primary ms-2';
+            badge.textContent = '0 selected';
+            header.after(badge);
+        }
+        function updateCount() {
+            var checked = document.querySelectorAll('.interest-checkbox:checked').length;
+            var label = document.querySelector('.interest-count-label');
+            if (label) label.textContent = checked + ' selected';
+        }
+        checkboxes.forEach(function (cb) {
+            cb.addEventListener('change', updateCount);
+        });
+        updateCount();
+    }
+
+    // Animate fit bars on results page
+    document.querySelectorAll('.fit-bar-fill').forEach(function (bar) {
+        var w = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(function () { bar.style.width = w; }, 300);
+    });
+});
+</script>
+
+{% endblock %}

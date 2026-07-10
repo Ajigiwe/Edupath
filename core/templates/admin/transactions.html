@@ -1,0 +1,227 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+{% block admin_title %}Transactions{% endblock %}
+{% block search_placeholder %}Search by user, email or transaction ID...{% endblock %}
+
+{% block admin_stats %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-currency-dollar"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">GHS {{ total_revenue|floatformat:"0" }}</span><span class="stat-mini-label">Total Revenue</span></div>
+  </div>
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#dcfce7;color:#166534"><i class="bi bi-check-circle-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_success }}</span><span class="stat-mini-label">Successful</span></div>
+  </div>
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#fef9c3;color:#854d0e"><i class="bi bi-hourglass-split"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_pending }}</span><span class="stat-mini-label">Pending</span></div>
+  </div>
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#fee2e2;color:#991b1b"><i class="bi bi-x-circle-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_failed }}</span><span class="stat-mini-label">Failed</span></div>
+  </div>
+</div>
+
+{% if status_filter or provider_filter %}
+<div class="mb-3 d-flex align-items-center gap-2" style="font-size:0.82rem">
+  <span style="color:#78716c">Active filters:</span>
+  {% if status_filter %}<span class="tag" style="background:#e7e5e4">Status: {{ status_filter }}</span>{% endif %}
+  {% if provider_filter %}<span class="tag" style="background:#e7e5e4">Provider: {{ provider_filter }}</span>{% endif %}
+  <a href="{% url 'transaction_dashboard' %}" class="btn btn-sm" style="color:#78716c;text-decoration:underline;font-size:0.78rem">Clear all</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'transaction_dashboard' %}?status=SUCCESS" class="btn btn-sm {% if status_filter == 'SUCCESS' %}btn-secondary{% else %}btn-outline-secondary{% endif %}" style="font-size:0.78rem;border-radius:8px">Success</a>
+<a href="{% url 'transaction_dashboard' %}?status=PENDING" class="btn btn-sm {% if status_filter == 'PENDING' %}btn-secondary{% else %}btn-outline-secondary{% endif %}" style="font-size:0.78rem;border-radius:8px">Pending</a>
+<a href="{% url 'transaction_dashboard' %}?status=FAILED" class="btn btn-sm {% if status_filter == 'FAILED' %}btn-secondary{% else %}btn-outline-secondary{% endif %}" style="font-size:0.78rem;border-radius:8px">Failed</a>
+{% endblock %}
+
+{% block add_label %}<i class="bi bi-plus-lg"></i> Record Payment{% endblock %}
+
+{% block table_headers %}
+<th>Transaction ID</th>
+<th>User</th>
+<th>Amount</th>
+<th>Provider</th>
+<th>Status</th>
+<th>Plan</th>
+<th>Date</th>
+<th>Actions</th>
+{% endblock %}
+
+{% block table_rows %}
+{% for p in payments %}
+<tr>
+  <td>
+    <div class="cell-title" style="font-size:0.78rem;font-family:monospace">{{ p.transaction_id|truncatechars:24 }}</div>
+    {% if p.notes %}
+    <div class="cell-muted" style="font-size:0.7rem;margin-top:0.1rem">{{ p.notes|truncatechars:40 }}</div>
+    {% endif %}
+  </td>
+  <td>
+    <div class="d-flex align-items-center gap-2">
+      <span style="width:28px;height:28px;border-radius:50%;background:#1e3a5f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0">{{ p.user.username|first|upper }}</span>
+      <div>
+        <div class="cell-title" style="font-size:0.8rem">{{ p.user.username }}</div>
+        <div class="cell-muted" style="font-size:0.7rem">{{ p.user.email|truncatechars:20 }}</div>
+      </div>
+    </div>
+  </td>
+  <td style="font-weight:600;color:#1c1917">GHS {{ p.amount|floatformat:"2" }}</td>
+  <td>
+    {% if p.provider == 'PAYSTACK' %}<span class="tag" style="background:#e8f0fe;color:#1e3a5f">Paystack</span>
+    {% elif p.provider == 'MANUAL' %}<span class="tag" style="background:#fef3e2;color:#c2410c">Manual</span>
+    {% elif p.provider == 'FREE' %}<span class="tag" style="background:#e6f7e6;color:#166534">Free</span>
+    {% else %}<span class="tag">{{ p.provider }}</span>{% endif %}
+  </td>
+  <td>
+    {% if p.status == 'SUCCESS' %}<span class="tag" style="background:#dcfce7;color:#166534;font-weight:600">Success</span>
+    {% elif p.status == 'PENDING' %}<span class="tag" style="background:#fef9c3;color:#854d0e;font-weight:600">Pending</span>
+    {% elif p.status == 'FAILED' %}<span class="tag" style="background:#fee2e2;color:#991b1b;font-weight:600">Failed</span>
+    {% elif p.status == 'REFUNDED' %}<span class="tag" style="background:#f3e8ff;color:#6b21a8;font-weight:600">Refunded</span>
+    {% else %}<span class="tag">{{ p.status }}</span>{% endif %}
+  </td>
+  <td class="cell-muted" style="font-size:0.78rem">
+    {% if p.subscription and p.subscription.plan %}
+    <span style="border-left:3px solid {{ p.subscription.plan.color }};padding-left:0.4rem">{{ p.subscription.plan.name }}</span>
+    {% else %}—{% endif %}
+  </td>
+  <td class="cell-muted" style="font-size:0.78rem">{{ p.created_at|date:"M j, Y" }}<br><span style="font-size:0.7rem">{{ p.created_at|date:"H:i" }}</span></td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn status-btn"
+        data-id="{{ p.id }}"
+        data-status="{{ p.status }}"
+        title="Update status"><i class="bi bi-arrow-repeat"></i></button>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="8"><div class="empty-state"><i class="bi bi-receipt"></i>No transactions found</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block add_modal %}
+<div class="modal fade admin-modal" id="addModal">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h5 class="modal-title">Record Payment</h5>
+        <small style="opacity:0.75;font-weight:400">Manually record an offline or external payment</small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <form method="POST" action="{% url 'record_transaction' %}">
+      <div class="modal-body">{% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-person me-1"></i>User</label>
+          <select name="user" class="form-select" required>
+            <option value="">— Select User —</option>
+            {% for u in users %}
+            <option value="{{ u.id }}">{{ u.username }} — {{ u.email }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label"><i class="bi bi-currency-dollar me-1"></i>Amount (GHS)</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:#f5f5f4;border:1.5px solid #d6d3d1;border-right:0;border-radius:8px 0 0 8px;font-size:0.85rem;font-weight:600;color:#78716c">GHS</span>
+              <input type="number" name="amount" class="form-control" step="0.01" min="0" placeholder="0.00" required style="border-left:0;border-radius:0 8px 8px 0">
+            </div>
+            <small style="color:#78716c;font-size:0.72rem">Enter the amount in Ghana Cedis.</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><i class="bi bi-credit-card me-1"></i>Provider</label>
+            <select name="provider" class="form-select">
+              <option value="MANUAL">Manual</option>
+              <option value="PAYSTACK">Paystack</option>
+              <option value="FREE">Free Grant</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-tag me-1"></i>Transaction ID</label>
+          <input type="text" name="transaction_id" class="form-control" placeholder="e.g. PAY-12345 or receipt number">
+          <small style="color:#78716c;font-size:0.72rem">Leave blank for auto-generated ID.</small>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label"><i class="bi bi-activity me-1"></i>Status</label>
+            <select name="status" class="form-select">
+              <option value="SUCCESS">Successful</option>
+              <option value="PENDING">Pending</option>
+              <option value="FAILED">Failed</option>
+              <option value="REFUNDED">Refunded</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><i class="bi bi-box me-1"></i>Assign Plan</label>
+            <select name="plan" class="form-select">
+              <option value="">— No Plan —</option>
+              {% for p in plans %}
+              <option value="{{ p.id }}">{{ p.name }} — GHS {{ p.price_monthly }}/mo</option>
+              {% endfor %}
+            </select>
+            <small style="color:#78716c;font-size:0.72rem">Auto-assign this plan to the user on success.</small>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-chat me-1"></i>Notes</label>
+          <textarea name="notes" class="form-control" rows="2" placeholder="Optional notes about this transaction"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-sm" style="color:#78716c;border:1.5px solid #d6d3d1;border-radius:8px;font-weight:600" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-save"><i class="bi bi-check-lg me-1"></i> Record</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<!-- Status Update Modal -->
+<div class="modal fade admin-modal" id="statusModal">
+  <div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h5 class="modal-title">Update Status</h5>
+        <small style="opacity:0.75;font-weight:400">Change transaction status</small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <form method="POST" id="statusForm">
+      <div class="modal-body">{% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-activity me-1"></i>Status</label>
+          <select name="status" id="statusSelect" class="form-select">
+            <option value="SUCCESS">Successful</option>
+            <option value="PENDING">Pending</option>
+            <option value="FAILED">Failed</option>
+            <option value="REFUNDED">Refunded</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-sm" style="color:#78716c;border:1.5px solid #d6d3d1;border-radius:8px;font-weight:600" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-save"><i class="bi bi-check-lg me-1"></i> Update</button>
+      </div>
+    </form>
+  </div></div>
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.status-btn');
+  if (!btn) return;
+  var id = btn.dataset.id;
+  document.getElementById('statusSelect').value = btn.dataset.status || 'PENDING';
+  document.getElementById('statusForm').action = '/transactions/update/' + id + '/';
+  openModal(document.getElementById('statusModal'));
+});
+</script>
+{% endblock %}

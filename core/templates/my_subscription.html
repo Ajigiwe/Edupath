@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_extras %}
+{% block content %}
+
+<div class="sub-wrap">
+  <div class="sub-header">
+    <div class="sub-header-left">
+      <div class="sub-header-icon"><i class="bi bi-layers"></i></div>
+      <div>
+        <h1 class="sub-header-title">My Subscription</h1>
+        <p class="sub-header-desc">Manage your plan and view payment history.</p>
+      </div>
+    </div>
+    <a href="{% url 'plans' %}" class="sub-header-btn">All Plans</a>
+  </div>
+
+  <div class="sub-body">
+    {% if subscription and subscription.plan %}
+
+    <div class="plan-card-main" style="--accent:{{ subscription.plan.color }}">
+      <div class="plan-card-accent" style="background:{{ subscription.plan.color }}"></div>
+      <div class="plan-card-inner">
+        <div class="plan-card-top">
+          <div class="plan-card-tags">
+            <span class="plan-status {% if subscription.status == 'ACTIVE' %}plan-status-on{% else %}plan-status-off{% endif %}">
+              <i class="bi bi-{% if subscription.status == 'ACTIVE' %}check-circle{% else %}clock{% endif %}"></i>
+              {{ subscription.get_status_display }}
+            </span>
+            {% if subscription.plan.badge_label %}
+            <span class="plan-badge-tag">{{ subscription.plan.badge_label }}</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'plans' %}" class="plan-change-btn">Change</a>
+        </div>
+        <div class="plan-card-name">{{ subscription.plan.name }}</div>
+        <div class="plan-card-price">
+          {% if subscription.plan.price_monthly == 0 %}
+          <span class="plan-price-free">Free</span>
+          {% else %}
+          <span class="plan-price-num">GHS {{ subscription.plan.price_monthly }}</span>
+          <span class="plan-price-period">/ month</span>
+          {% endif %}
+        </div>
+        <div class="plan-card-meta">
+          <div class="plan-meta-item">
+            <span class="plan-meta-label">Started</span>
+            <span class="plan-meta-val">{{ subscription.start_date|date:"M j, Y" }}</span>
+          </div>
+          {% if subscription.end_date %}
+          <div class="plan-meta-divider"></div>
+          <div class="plan-meta-item">
+            <span class="plan-meta-label">Ends</span>
+            <span class="plan-meta-val">{{ subscription.end_date|date:"M j, Y" }}</span>
+          </div>
+          {% endif %}
+          <div class="plan-meta-divider"></div>
+          <div class="plan-meta-item">
+            <span class="plan-meta-label">Auto-renew</span>
+            <span class="plan-meta-val">{% if subscription.auto_renew %}On{% else %}Off{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <h3 class="sub-section-title">Included features</h3>
+      <div class="feature-list">
+        {% for pt in subscription.plan.planfeaturethrough_set.all %}
+        <div class="feature-item">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>{{ pt.feature.name }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="empty-card">
+      <div class="empty-icon"><i class="bi bi-box"></i></div>
+      <h4 class="empty-title">No active subscription</h4>
+      <p class="empty-desc">Choose a plan to unlock more features.</p>
+      <a href="{% url 'plans' %}" class="empty-btn">View Plans</a>
+    </div>
+
+    {% endif %}
+
+    {% if payments %}
+    <div class="sub-section">
+      <h3 class="sub-section-title">Payment history</h3>
+      <div class="pay-list">
+        {% for p in payments %}
+        <div class="pay-row">
+          <div class="pay-left">
+            <div class="pay-icon">
+              {% if p.provider == 'PAYSTACK' %}<i class="bi bi-credit-card"></i>
+              {% elif p.provider == 'MANUAL' %}<i class="bi bi-bank"></i>
+              {% else %}<i class="bi bi-gift"></i>{% endif %}
+            </div>
+            <div>
+              <div class="pay-amount">GHS {{ p.amount }}</div>
+              <div class="pay-meta">{{ p.get_provider_display }} &middot; {{ p.created_at|date:"M j, Y" }}</div>
+            </div>
+          </div>
+          <span class="pay-status pay-{{ p.status|lower }}">
+            {% if p.status == 'SUCCESS' %}<i class="bi bi-check-circle-fill"></i>
+            {% elif p.status == 'PENDING' %}<i class="bi bi-hourglass-split"></i>
+            {% elif p.status == 'FAILED' %}<i class="bi bi-x-circle-fill"></i>
+            {% else %}<i class="bi bi-arrow-counterclockwise"></i>{% endif %}
+            {{ p.get_status_display }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% elif subscription and subscription.plan.price_monthly > 0 %}
+    <div class="sub-section">
+      <h3 class="sub-section-title">Payment history</h3>
+      <div class="empty-pay"><p class="text-muted mb-0">No payments recorded yet.</p></div>
+    </div>
+    {% endif %}
+
+    {% if subscription %}
+    <div class="sub-section">
+      <h3 class="sub-section-title">Other plans</h3>
+      {% for plan in plans %}
+      {% if plan.id != subscription.plan.id and plan.is_active %}
+      <div class="switch-row">
+        <div class="switch-left">
+          <span class="switch-name">{{ plan.name }}</span>
+          <span class="switch-price">GHS {{ plan.price_monthly }}/mo</span>
+        </div>
+        <a href="{% url 'subscribe' plan.slug %}" class="switch-btn">Switch</a>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.sub-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.sub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.sub-header-icon {
+  width: 44px; height: 44px;
+  background: var(--primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.sub-header-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+}
+.sub-header-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.sub-header-btn {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.sub-header-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--background-light);
+}
+
+.plan-card-main {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(30,58,95,0.12);
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.plan-card-accent {
+  height: 6px;
+  width: 100%;
+}
+.plan-card-inner {
+  padding: 1.75rem;
+}
+.plan-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.plan-card-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.plan-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+}
+.plan-status-on { background: #d1fae5; color: #065f46; }
+.plan-status-off { background: #f5f4f2; color: #78716c; }
+.plan-badge-tag {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+.plan-change-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.plan-change-btn:hover { color: var(--primary); background: var(--background-light); }
+
+.plan-card-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.plan-card-price { margin-bottom: 1rem; }
+.plan-price-free { font-size: 1.4rem; font-weight: 700; color: var(--text-muted); }
+.plan-price-num { font-size: 1.9rem; font-weight: 800; color: var(--text); }
+.plan-price-period { font-size: 0.85rem; color: var(--text-muted); }
+
+.plan-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--background);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+}
+.plan-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.plan-meta-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.plan-meta-val { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.plan-meta-divider {
+  width: 1px; height: 28px;
+  background: var(--border);
+}
+
+.sub-section { margin-top: 2rem; }
+.sub-section-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 1rem;
+  font-size: 1.05rem;
+}
+
+.feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.feature-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.feature-item i { color: var(--primary); font-size: 0.85rem; }
+
+.empty-card {
+  background: #fff;
+  border: 1px dashed var(--border-dark);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+.empty-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 0.8rem;
+  background: var(--background);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--text-muted);
+}
+.empty-title {
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.empty-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+.empty-btn {
+  display: inline-block;
+  padding: 0.55rem 1.5rem;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.empty-btn:hover { background: var(--primary-dark); color: #fff; }
+
+.pay-list {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.pay-row:last-child { border-bottom: 0; }
+.pay-row:hover { background: var(--background); }
+.pay-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.pay-icon {
+  width: 40px; height: 40px;
+  background: var(--background);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 1rem;
+}
+.pay-amount { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+.pay-meta { font-size: 0.78rem; color: var(--text-muted); }
+.pay-status {
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+.pay-success { background: #d1fae5; color: #065f46; }
+.pay-pending { background: #fef3c7; color: #92400e; }
+.pay-failed  { background: #fee2e2; color: #991b1b; }
+.pay-refunded { background: #f3f4f6; color: #6b7280; }
+
+.empty-pay {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 0.75rem;
+  transition: border-color 0.15s;
+}
+.switch-row:hover { border-color: var(--primary-light); }
+.switch-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.switch-name { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+.switch-price { color: var(--text-muted); font-size: 0.85rem; }
+.switch-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.switch-btn:hover { background: var(--primary); color: #fff; }
+</style>
+
+{% endblock %}

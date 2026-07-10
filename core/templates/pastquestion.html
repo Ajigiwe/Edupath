@@ -1,0 +1,658 @@
+{% extends 'base2.html' %}
+{% block content %}
+
+<main class="py-5">
+    <!-- Header Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="bi bi-pencil-square me-3"></i>Practice Past Questions
+            </h1>
+            <p class="lead text-muted">
+                Prepare for your exams with our comprehensive collection of theory and objective questions 
+                from previous years. Master each topic and boost your confidence.
+            </p>
+        </div>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="py-4">
+        <div class="container">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-funnel me-2"></i>Filter Questions
+                    </h5>
+                    
+                    <form method="GET" class="row g-3 align-items-end">
+                        <!-- Course -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold">Course</label>
+                            <select name="interest" class="form-select" title="Select Course">
+                                <option value="">-- Select Course --</option>
+                                {% for i in interests %}
+                                <option value="">{{ i.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Department -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold">Department</label>
+                            <select name="interest" class="form-select" title="Select Department">
+                                <option value="">-- Select Department --</option>
+                                {% for i in interests %}
+                                <option value="">{{ i.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Level -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold">Level</label>
+                            <select name="interest" class="form-select" title="Select Level">
+                                <option value="">-- Select Level --</option>
+                                {% for i in interests %}
+                                <option value="">{{ i.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="col-12 col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search me-1"></i>Filter
+                            </button>
+                            <a href="{% url 'institutions' %}" class="btn btn-outline-primary flex-fill">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Questions Section -->
+    <section class="py-4">
+        <div class="container">
+            
+            <!-- Theory Questions -->
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="bi bi-book-fill text-primary me-2"></i>Theory Questions
+                    </h3>
+                    {% if theory_questions %}
+                    <span class="badge bg-primary ms-3">{{ theory_questions.paginator.count }} Questions</span>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    {% for q in theory_questions %}
+                    <div class="col-12 mb-3">
+                        <div class="card border-0 shadow-sm hover-card">
+                            <div class="card-body">
+                                <!-- Question Number and Text -->
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <span class="badge bg-primary-subtle text-primary fw-bold badge-min-width">
+                                            Q{{ theory_questions.start_index|add:forloop.counter0 }}
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0 text-muted question-text">{{ q.question }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Show Answer Button -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-outline-primary show-answer-btn">
+                                        <i class="bi bi-eye me-1"></i>Show Answer
+                                    </button>
+                                </div>
+
+                                <!-- Answer Section (Hidden by default) -->
+                                <div class="answer-section mt-3 d-none pt-3 border-top">
+                                    <div class="bg-light p-3 rounded">
+                                        <h6 class="fw-bold text-success mb-2">
+                                            <i class="bi bi-check-circle me-2"></i>Answer:
+                                        </h6>
+                                        <p class="mb-0 text-muted answer-text">{{ q.answer }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info border-0 text-center py-5" role="alert">
+                            <i class="bi bi-info-circle icon-size-md"></i>
+                            <h5 class="mt-3 fw-bold">No Theory Questions Available</h5>
+                            <p class="text-muted mb-0">Questions will be added soon.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Theory Pagination -->
+{% if theory_questions.has_other_pages %}
+<div class="d-flex justify-content-center gap-2 mt-4">
+  {% if theory_questions.has_previous %}<a class="btn btn-outline-primary btn-sm" href="?theory_page={{ theory_questions.previous_page_number }}&mcq_page={{ mcq_questions.number }}">← Previous</a>{% endif %}
+  {% if theory_questions.has_next %}<a class="btn btn-outline-primary btn-sm" href="?theory_page={{ theory_questions.next_page_number }}&mcq_page={{ mcq_questions.number }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+            </div>
+
+            <!-- MCQ Questions -->
+            <div>
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="bi bi-checkbox2-checked text-primary me-2"></i>Multiple Choice Questions
+                    </h3>
+                    {% if mcq_questions %}
+                    <span class="badge bg-primary ms-3">{{ mcq_questions.paginator.count }} Questions</span>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    {% for q in mcq_questions %}
+                    <div class="col-12 mb-3">
+                        <div class="card border-0 shadow-sm hover-card">
+                            <div class="card-body">
+                                <!-- Question -->
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <span class="badge bg-success-subtle text-success fw-bold badge-min-width">
+                                            Q{{ mcq_questions.start_index|add:forloop.counter0 }}
+                                        </span>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-3 text-muted question-text fw-medium">{{ q.question }}</p>
+                                            
+                                            <!-- Options -->
+                                            <div class="options-group">
+                                                {% for option in q.mcqoption_set.all %}
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input mcq-option" type="radio" 
+                                                        name="q{{ q.id }}" id="option{{ option.id }}" value="{{ option.id }}">
+                                                    <label class="form-check-label" for="option{{ option.id }}">
+                                                        <span class="option-text">{{ option.text }}</span>
+                                                    </label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Show Answer Button -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-outline-success show-mcq-answer-btn">
+                                        <i class="bi bi-eye me-1"></i>Reveal Answer
+                                    </button>
+                                </div>
+
+                                <!-- Answer Section -->
+                                <div class="answer-section mt-3 d-none pt-3 border-top">
+                                    <div class="bg-light p-3 rounded">
+                                        <h6 class="fw-bold text-success mb-2">
+                                            <i class="bi bi-check-circle me-2"></i>Correct Answer:
+                                        </h6>
+                                        <p class="mb-0 text-muted">{{ q.correct_answer }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info border-0 text-center py-5" role="alert">
+                            <i class="bi bi-info-circle icon-size-md"></i>
+                            <h5 class="mt-3 fw-bold">No MCQ Questions Available</h5>
+                            <p class="text-muted mb-0">Questions will be added soon.</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- MCQ Pagination -->
+{% if mcq_questions.has_other_pages %}
+<div class="d-flex justify-content-center gap-2 mt-4">
+  {% if mcq_questions.has_previous %}<a class="btn btn-outline-primary btn-sm" href="?theory_page={{ theory_questions.number }}&mcq_page={{ mcq_questions.previous_page_number }}">← Previous</a>{% endif %}
+  {% if mcq_questions.has_next %}<a class="btn btn-outline-primary btn-sm" href="?theory_page={{ theory_questions.number }}&mcq_page={{ mcq_questions.next_page_number }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<style>
+    .bg-primary-subtle {
+        background-color: #ede9fe !important;
+    }
+
+    .bg-success-subtle {
+        background-color: #ecfdf5 !important;
+    }
+
+    .hover-card {
+        transition: var(--transition);
+    }
+
+    .hover-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+        transform: translateY(-2px);
+    }
+
+    .show-answer-btn, .show-mcq-answer-btn {
+        transition: var(--transition);
+    }
+
+    .show-answer-btn:hover, .show-mcq-answer-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .question-text {
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    .answer-text {
+        line-height: 1.7;
+        font-size: 0.95rem;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+</style>
+
+<script>
+document.querySelectorAll('.show-answer-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const answerDiv = this.closest('.card-body').querySelector('.answer-section');
+        answerDiv.classList.toggle('d-none');
+        
+        // Update button text
+        if (answerDiv.classList.contains('d-none')) {
+            this.innerHTML = '<i class="bi bi-eye me-1"></i>Show Answer';
+        } else {
+            this.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Hide Answer';
+        }
+    });
+});
+
+document.querySelectorAll('.show-mcq-answer-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const answerDiv = this.closest('.card-body').querySelector('.answer-section');
+        answerDiv.classList.toggle('d-none');
+        
+        // Update button text
+        if (answerDiv.classList.contains('d-none')) {
+            this.innerHTML = '<i class="bi bi-eye me-1"></i>Reveal Answer';
+        } else {
+            this.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Hide Answer';
+        }
+    });
+});
+</script>
+
+<!-- ================= MCQ ================= -->
+    <h5 class="mb-3 mt-5">Objective Questions (MCQ)</h5>
+
+    <form id="quizForm">
+
+       {% for q in mcq_questions %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+        <!-- QUESTION NUMBER -->
+        <h6 class="fw-bold">
+            Question {{ mcq_questions.start_index|add:forloop.counter0 }}
+        </h6>
+
+        <p>{{ q.question }}</p>
+
+        {% for opt in q.options.all %}
+        <div class="form-check">
+            <!-- <input type="radio"
+                   name="q{{ q.id }}"
+                   value="{{ opt.id }}"
+                   data-correct="{{ opt.is_correct }}"
+                   class="form-check-input"
+                   id="opt{{ opt.id }}"> -->
+
+                   <input
+  type="radio"
+  name="q{{ q.id }}"
+  value="{{ opt.id }}"
+  data-correct="{{ opt.is_correct|yesno:'true,false' }}"
+  class="form-check-input">
+
+            <!-- ✅ ADD THIS BACK -->
+            <label class="form-check-label" for="opt{{ opt.id }}">
+                {{ opt.text }}
+            </label>
+        </div>
+        {% endfor %}
+
+        <input type="hidden"
+       class="correct-answer"
+       data-question="q{{ q.id }}"
+       value="{% for opt in q.options.all %}{% if opt.is_correct %}{{ opt.id }}{% endif %}{% endfor %}">
+    </div>
+</div>
+{% empty %}
+<p>No MCQ questions available</p>
+{% endfor %}
+
+        <!-- <button type="button" class="btn btn-success btn-block" id="submitQuiz">
+            Submit Answers
+        </button>
+        <h5 class="mt-3 text-center" id="scoreResult"></h5> -->
+
+       {% if mcq_questions.has_next %}
+
+<div class="text-center mt-4">
+    <a class="btn btn-primary"
+       href="?mcq_page={{ mcq_questions.next_page_number }}&theory_page={{ theory_questions.number }}">
+        Next Page
+    </a>
+</div>
+
+{% else %}
+
+<div class="text-center mt-4">
+
+    <button type="button"
+            class="btn btn-success btn-lg"
+            id="submitQuiz">
+        Submit Final Answers
+    </button>
+
+    <button type="button"
+            class="btn btn-danger btn-lg ml-2"
+            id="resetQuiz">
+        Reset Quiz
+    </button>
+
+    <h5 class="mt-3" id="scoreResult"></h5>
+
+</div>
+
+{% endif %}
+    </form>
+
+{% if mcq_questions.has_other_pages %}
+<div class="d-flex justify-content-center gap-2 mt-4">
+  {% if mcq_questions.has_previous %}<a class="btn btn-outline-primary btn-sm" href="?mcq_page={{ mcq_questions.previous_page_number }}&theory_page={{ theory_questions.number }}">← Previous</a>{% endif %}
+  {% if mcq_questions.has_next %}<a class="btn btn-outline-primary btn-sm" href="?mcq_page={{ mcq_questions.next_page_number }}&theory_page={{ theory_questions.number }}">Next →</a>{% endif %}
+</div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ================= SAVE ANSWERS =================
+    document.querySelectorAll(".form-check-input").forEach(input => {
+
+        let saved = localStorage.getItem(input.name);
+
+        if (saved === input.value) {
+            input.checked = true;
+        }
+
+        input.addEventListener("change", function () {
+            localStorage.setItem(this.name, this.value);
+        });
+
+    });
+
+    // ================= FINAL SUBMIT =================
+    const submitBtn = document.getElementById("submitQuiz");
+
+    if (submitBtn) {
+
+        submitBtn.addEventListener("click", function () {
+
+            let score = 0;
+
+            // GET ALL STORED QUESTIONS
+            let questionNames = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+
+                let key = localStorage.key(i);
+
+                if (key.startsWith("q")) {
+                    questionNames.push(key);
+                }
+            }
+
+            // CHECK ANSWERS
+            questionNames.forEach(qname => {
+
+                let selectedAnswer = localStorage.getItem(qname);
+
+                // FIND CORRECT ANSWER
+                let hiddenInput = document.querySelector(
+                    `.correct-answer[data-question="${qname}"]`
+                );
+
+                if (hiddenInput) {
+
+                    let correctAnswer = hiddenInput.value;
+
+                    if (selectedAnswer === correctAnswer) {
+                        score++;
+                    }
+
+                }
+
+            });
+
+            document.getElementById("scoreResult").innerText =
+                "Your Final Score: " + score + " / " + {{ mcq_total_questions }};
+
+        });
+
+    }
+
+});
+</script>
+
+<!-- <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ================= SAVE ANSWERS =================
+    document.querySelectorAll(".form-check-input").forEach(input => {
+
+        // Restore saved answer
+        let saved = localStorage.getItem(input.name);
+
+        if (saved && saved === input.value) {
+            input.checked = true;
+        }
+
+        // Save answer when selected
+        input.addEventListener("change", function () {
+            localStorage.setItem(this.name, this.value);
+        });
+
+    });
+
+    // ================= SUBMIT QUIZ =================
+    document.getElementById("submitQuiz").addEventListener("click", function () {
+
+        let score = 0;
+
+        // // Get ALL question names
+        // let questionNames = new Set();
+
+        // document.querySelectorAll(".form-check-input").forEach(input => {
+        //     questionNames.add(input.name);
+        // });
+
+        let questionNames = new Set();
+
+for (let i = 0; i < localStorage.length; i++) {
+
+    let key = localStorage.key(i);
+
+    if (key.startsWith("q")) {
+        questionNames.add(key);
+    }
+}
+
+        // Loop through all saved answers
+        questionNames.forEach(qname => {
+
+            let selectedValue = localStorage.getItem(qname);
+
+            let options = document.querySelectorAll(`input[name="${qname}"]`);
+
+            options.forEach(opt => {
+
+                let parent = opt.parentElement;
+
+                // RESET COLORS
+                parent.style.color = "black";
+
+                // SHOW CORRECT ANSWER
+                if (opt.dataset.correct === "true") {
+                    parent.style.color = "green";
+                }
+
+                // USER SELECTED WRONG ANSWER
+                if (selectedValue === opt.value && opt.dataset.correct !== "true") {
+                    parent.style.color = "red";
+                }
+
+                // COUNT SCORE
+                if (selectedValue === opt.value && opt.dataset.correct === "true") {
+                    score++;
+                }
+
+            });
+
+        });
+
+        document.getElementById("scoreResult").innerText =
+            "Your Final Score: " + score + " / " + {{ mcq_total_questions }};
+
+    });
+
+});
+</script> -->
+
+<script>
+
+// ================= RESET QUIZ =================
+document.getElementById("resetQuiz").addEventListener("click", function () {
+
+    // Remove saved answers
+    let keysToRemove = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+
+        let key = localStorage.key(i);
+
+        if (key.startsWith("q")) {
+            keysToRemove.push(key);
+        }
+    }
+
+    keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+    });
+
+    // Uncheck radio buttons
+    document.querySelectorAll(".form-check-input").forEach(input => {
+        input.checked = false;
+        input.parentElement.style.color = "black";
+    });
+
+    // Clear score
+    document.getElementById("scoreResult").innerText = "";
+
+    alert("Quiz has been reset.");
+
+});
+</script>
+
+<!-- <script>
+    document.querySelectorAll(".form-check").forEach(el => {
+    el.style.color = "black";
+});
+document.addEventListener("click", function (e) {
+
+    if (e.target.classList.contains("show-answer-btn")) {
+        let answer = e.target.nextElementSibling;
+
+        answer.classList.toggle("d-none");
+
+        e.target.innerText =
+            answer.classList.contains("d-none") ? "Show Answer" : "Hide Answer";
+    }
+
+});
+</script>
+
+<script>
+document.getElementById("submitQuiz").addEventListener("click", function () {
+
+    let score = 0;
+
+    let questionNames = new Set();
+
+    document.querySelectorAll(".form-check-input").forEach(input => {
+        questionNames.add(input.name);
+    });
+
+    questionNames.forEach(qname => {
+
+        let options = document.querySelectorAll(`input[name="${qname}"]`);
+        let selected = document.querySelector(`input[name="${qname}"]:checked`);
+
+        options.forEach(opt => {
+
+            let label = opt.parentElement;
+
+            // RESET
+            label.style.color = "black";
+
+            // SHOW CORRECT ANSWER
+            if (opt.dataset.correct === "true") {
+                label.style.color = "green";
+            }
+        });
+
+        // CHECK USER ANSWER
+        if (selected) {
+
+            if (selected.dataset.correct === "true") {
+                score++;
+            } else {
+                selected.parentElement.style.color = "red";
+            }
+
+        }
+
+    });
+
+    document.getElementById("scoreResult").innerText =
+        "Your Score: " + score + " / " + {{ mcq_total_questions }};
+
+});
+</script>
+{% endblock %}

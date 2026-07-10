@@ -1,0 +1,298 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}Subscription Plans{% endblock %}
+{% block add_label %}Plan{% endblock %}
+{% block search_placeholder %}Search plans...{% endblock %}
+
+{% block admin_stats %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-credit-card-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_plans }}</span><span class="stat-mini-label">Total Plans</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block table_section %}
+<div class="row g-3">
+{% for p in plans %}
+<div class="col-lg-6">
+  <div class="plan-card" style="border-left:4px solid {{ p.color }}">
+    <div class="plan-card-header">
+      <div class="d-flex align-items-center gap-2">
+        <span class="plan-dot" style="background:{{ p.color }}"></span>
+        <span class="plan-name">{{ p.name }}</span>
+      </div>
+      <div class="action-group">
+        <button class="action-btn edit-btn"
+          data-id="{{ p.id }}" data-name="{{ p.name }}"
+          data-slug="{{ p.slug }}" data-description="{{ p.description|default:'' }}"
+          data-price_monthly="{{ p.price_monthly }}" data-price_yearly="{{ p.price_yearly }}"
+          data-active="{% if p.is_active %}1{% else %}0{% endif %}"
+          data-sort="{{ p.sort_order }}" data-badge="{{ p.badge_label|default:'' }}" data-color="{{ p.color }}"
+          data-features="{% for pf in p.planfeaturethrough_set.all %}{{ pf.feature.id }},{% endfor %}"><i class="bi bi-pencil"></i></button>
+        <form method="POST" action="{% url 'delete_plan' p.id %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="action-btn action-btn-danger" onclick="return confirm('Delete this plan?')"><i class="bi bi-trash"></i></button>
+        </form>
+      </div>
+    </div>
+    <div class="plan-card-body">
+      <div class="plan-meta">
+        <span class="plan-price"><strong>GHS {{ p.price_monthly }}</strong><span class="cell-muted">/mo</span></span>
+        <span class="plan-slug cell-muted">/{{ p.slug }}</span>
+      </div>
+      {% if p.description %}
+      <div class="plan-desc cell-muted">{{ p.description|truncatewords:20 }}</div>
+      {% endif %}
+      <div class="plan-features-list">
+        {% for pf in p.planfeaturethrough_set.all %}
+        <span class="tag">{{ pf.feature.name }}</span>
+        {% empty %}
+        <span class="cell-muted" style="font-size:0.8rem">No features assigned</span>
+        {% endfor %}
+      </div>
+      <div class="plan-footer-row">
+        <div class="d-flex gap-2 align-items-center">
+          {% if p.is_active %}
+          <span class="tag" style="background:#dcfce7;color:#166534">Active</span>
+          {% else %}
+          <span class="tag" style="background:#fee2e2;color:#991b1b">Inactive</span>
+          {% endif %}
+          {% if p.badge_label %}
+          <span class="tag tag-alt">{{ p.badge_label }}</span>
+          {% endif %}
+        </div>
+        <span class="cell-muted" style="font-size:0.75rem">Order: {{ p.sort_order }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="col-12">
+  <div class="empty-state"><i class="bi bi-folder2-open"></i>No plans added</div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+
+{% block base_pagination %}
+{% if plans.has_other_pages %}
+<div class="pagination-wrap" style="margin-top:1rem">
+  {% if plans.has_previous %}<a class="page-btn" href="?page={{ plans.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">← Previous</a>{% endif %}
+  {% if plans.has_next %}<a class="page-btn" href="?page={{ plans.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block add_modal_size %}modal-lg{% endblock %}
+{% block edit_modal_size %}modal-lg{% endblock %}
+{% block add_action %}{% url 'create_plan' %}{% endblock %}
+{% block add_modal_title %}Add Plan{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Create a new subscription plan</small>{% endblock %}
+{% block add_form %}
+<div class="row g-3">
+  <div class="col-12">
+    <div class="modal-section-title">Identity</div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Plan Name</label>
+    <input type="text" name="name" class="form-control" placeholder="e.g. Premium Pro" required>
+    <small style="color:#78716c;font-size:0.75rem">Display name for the plan shown to users.</small>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Slug</label>
+    <input type="text" name="slug" class="form-control" placeholder="e.g. premium-pro" required>
+    <small style="color:#78716c;font-size:0.75rem">URL identifier — lowercase with hyphens.</small>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Description</label>
+    <textarea name="description" class="form-control" placeholder="What makes this plan special? Describe its value…" rows="2"></textarea>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Pricing</div></div>
+  <div class="col-md-6">
+    <label class="form-label">Monthly Price (GHS)</label>
+    <div class="input-group">
+      <span class="input-group-text" style="background:#f5f5f4;border:1.5px solid #d6d3d1;border-right:0;border-radius:8px 0 0 8px;font-weight:600">₵</span>
+      <input type="number" name="price_monthly" class="form-control" placeholder="0.00" step="0.01" min="0" value="0" style="border-radius:0 8px 8px 0">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Yearly Price (GHS)</label>
+    <div class="input-group">
+      <span class="input-group-text" style="background:#f5f5f4;border:1.5px solid #d6d3d1;border-right:0;border-radius:8px 0 0 8px;font-weight:600">₵</span>
+      <input type="number" name="price_yearly" class="form-control" placeholder="0.00" step="0.01" min="0" value="0" style="border-radius:0 8px 8px 0">
+    </div>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Presentation</div></div>
+  <div class="col-md-4">
+    <label class="form-label">Brand Color</label>
+    <div class="d-flex align-items-center gap-2">
+      <input type="color" name="color" class="form-control form-control-color" value="#1e3a5f" style="width:44px;padding:0.2rem;height:36px;cursor:pointer;border-radius:6px">
+      <input type="text" name="color_hex" class="form-control" placeholder="#1e3a5f" style="font-family:monospace;flex:1">
+    </div>
+    <small style="color:#78716c;font-size:0.75rem">Accent stripe color for this plan.</small>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Badge Label</label>
+    <input type="text" name="badge_label" class="form-control" placeholder="e.g. Most Popular">
+    <small style="color:#78716c;font-size:0.75rem">Optional promo badge shown on the plan card.</small>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Sort Order</label>
+    <input type="number" name="sort_order" class="form-control" placeholder="0" value="0" min="0">
+    <small style="color:#78716c;font-size:0.75rem">Lower numbers appear first.</small>
+  </div>
+  <div class="col-12">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="is_active" id="addActive" checked>
+      <label class="form-check-label" for="addActive" style="font-size:0.88rem;color:#1c1917">Active — plan is available for purchase</label>
+    </div>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Features</div></div>
+  <div class="col-12">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.4rem">
+      {% for f in features %}
+      <label class="checkbox-label">
+        <input class="form-check-input" type="checkbox" name="features" value="{{ f.id }}">
+        <span>{{ f.name }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    <small style="color:#78716c;font-size:0.75rem;display:block;margin-top:0.4rem">Tick all features this plan includes.</small>
+  </div>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit Plan{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update plan configuration</small>{% endblock %}
+{% block edit_form %}
+<div class="row g-3">
+  <div class="col-12">
+    <div class="modal-section-title">Identity</div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Plan Name</label>
+    <input type="text" name="name" id="editName" class="form-control" placeholder="e.g. Premium Pro" required>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Slug</label>
+    <input type="text" name="slug" id="editSlug" class="form-control" placeholder="e.g. premium-pro" required>
+  </div>
+  <div class="col-12">
+    <label class="form-label">Description</label>
+    <textarea name="description" id="editDescription" class="form-control" placeholder="What makes this plan special?" rows="2"></textarea>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Pricing</div></div>
+  <div class="col-md-6">
+    <label class="form-label">Monthly Price (GHS)</label>
+    <div class="input-group">
+      <span class="input-group-text" style="background:#f5f5f4;border:1.5px solid #d6d3d1;border-right:0;border-radius:8px 0 0 8px;font-weight:600">₵</span>
+      <input type="number" name="price_monthly" id="editPriceMonthly" class="form-control" step="0.01" min="0" style="border-radius:0 8px 8px 0">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Yearly Price (GHS)</label>
+    <div class="input-group">
+      <span class="input-group-text" style="background:#f5f5f4;border:1.5px solid #d6d3d1;border-right:0;border-radius:8px 0 0 8px;font-weight:600">₵</span>
+      <input type="number" name="price_yearly" id="editPriceYearly" class="form-control" step="0.01" min="0" style="border-radius:0 8px 8px 0">
+    </div>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Presentation</div></div>
+  <div class="col-md-4">
+    <label class="form-label">Brand Color</label>
+    <div class="d-flex align-items-center gap-2">
+      <input type="color" id="editColor" name="color" class="form-control form-control-color" style="width:44px;padding:0.2rem;height:36px;cursor:pointer;border-radius:6px">
+      <input type="text" id="editColorHex" class="form-control" placeholder="#1e3a5f" style="font-family:monospace;flex:1">
+    </div>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Badge Label</label>
+    <input type="text" name="badge_label" id="editBadge" class="form-control" placeholder="e.g. Most Popular">
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">Sort Order</label>
+    <input type="number" name="sort_order" id="editSort" class="form-control" min="0">
+  </div>
+  <div class="col-12">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="is_active" id="editActive">
+      <label class="form-check-label" for="editActive" style="font-size:0.88rem;color:#1c1917">Active — plan is available for purchase</label>
+    </div>
+  </div>
+
+  <div class="col-12"><hr class="my-1"><div class="modal-section-title">Features</div></div>
+  <div class="col-12">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.4rem">
+      {% for f in features %}
+      <label class="checkbox-label">
+        <input class="form-check-input edit-feature" type="checkbox" name="features" value="{{ f.id }}">
+        <span>{{ f.name }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block edit_init %}
+document.getElementById('editName').value=btn.dataset.name;
+document.getElementById('editSlug').value=btn.dataset.slug;
+document.getElementById('editDescription').value=btn.dataset.description||'';
+document.getElementById('editPriceMonthly').value=btn.dataset.price_monthly||'0';
+document.getElementById('editPriceYearly').value=btn.dataset.price_yearly||'0';
+document.getElementById('editColor').value=btn.dataset.color||'#1e3a5f';
+document.getElementById('editColorHex').value=btn.dataset.color||'#1e3a5f';
+document.getElementById('editBadge').value=btn.dataset.badge||'';
+document.getElementById('editSort').value=btn.dataset.sort||'0';
+document.getElementById('editActive').checked=btn.dataset.active==='1';
+document.querySelectorAll('.edit-feature').forEach(function(cb){cb.checked=false;});
+(btn.dataset.features||'').split(',').forEach(function(v){
+  if(v){var el=document.querySelector('.edit-feature[value="'+v+'"]');if(el)el.checked=true;}
+});
+{% endblock %}
+{% block edit_action_prefix %}/plan-admin/{% endblock %}
+
+{% block admin_scripts %}
+<style>
+.modal-section-title {
+  font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+  color:#78716c;margin-bottom:0.25rem;
+}
+.plan-card {
+  background:#fff;border-radius:10px;border:1px solid #d6d3d1;
+  overflow:hidden;transition:box-shadow 0.2s;
+}
+.plan-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+.plan-card-header {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.75rem 1rem;border-bottom:1px solid #f0f0eb;
+}
+.plan-dot {
+  display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.plan-name { font-weight:700;font-size:0.95rem;color:#1c1917; }
+.plan-card-body { padding:0.75rem 1rem; }
+.plan-meta { display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem; }
+.plan-price strong { font-size:1.15rem;color:#1c1917; }
+.plan-desc { font-size:0.82rem;margin-bottom:0.6rem;line-height:1.5; }
+.plan-features-list { display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.6rem; }
+.plan-footer-row { display:flex;justify-content:space-between;align-items:center; }
+</style>
+<script>
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.matches('input[type="color"][name="color"]')||el.id==='editColor'){
+    var hex=el.closest('.d-flex')?.querySelector('input[type="text"]')||document.getElementById('editColorHex');
+    if(hex) hex.value=el.value;
+  }
+  if(el.matches('input[type="text"][name="color_hex"]')||el.id==='editColorHex'){
+    var color=el.closest('.d-flex')?.querySelector('input[type="color"]')||document.getElementById('editColor');
+    if(color&&/^#[0-9a-f]{6}$/i.test(el.value)) color.value=el.value;
+  }
+});
+</script>
+{% endblock %}

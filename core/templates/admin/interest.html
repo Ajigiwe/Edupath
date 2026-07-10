@@ -1,0 +1,52 @@
+{% extends 'admin/base_admin.html' %}
+{% block admin_title %}Interests{% endblock %}
+{% block add_label %}Interest{% endblock %}
+{% block search_placeholder %}Search interest...{% endblock %}
+
+{% block admin_stats %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-heart-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_interests }}</span><span class="stat-mini-label">Total Interests</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block table_headers %}<th>Name</th><th>Actions</th>{% endblock %}
+{% block table_rows %}
+{% for i in items %}
+<tr>
+  <td class="cell-title">{{ i.name }}</td>
+  <td>
+    <div class="action-group">
+      <button class="action-btn edit-btn" data-id="{{ i.id }}" data-name="{{ i.name }}"><i class="bi bi-pencil"></i> Edit</button>
+      <a href="{% url 'delete_interest' i.id %}" class="action-btn action-btn-danger" onclick="return confirm('Delete this interest?')"><i class="bi bi-trash"></i> Delete</a>
+    </div>
+  </td>
+</tr>
+{% empty %}
+<tr><td colspan="2"><div class="empty-state"><i class="bi bi-folder2-open"></i>No interests added</div></td></tr>
+{% endfor %}
+{% endblock %}
+
+{% block add_action %}{% url 'create_interest' %}{% endblock %}
+{% block add_modal_title %}Add Interest{% endblock %}
+{% block add_modal_sub %}<small style="opacity:0.75;font-weight:400">Add a new career interest category</small>{% endblock %}
+{% block add_form %}
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-tag me-1"></i>Interest Name</label>
+  <input type="text" name="name" class="form-control" placeholder="e.g. Engineering, Medicine, Arts" required>
+  <small style="color:#78716c;font-size:0.75rem">A category of career interest used to match students with programs.</small>
+</div>
+{% endblock %}
+
+{% block edit_modal_title %}Edit Interest{% endblock %}
+{% block edit_modal_sub %}<small style="opacity:0.75;font-weight:400">Update interest name</small>{% endblock %}
+{% block edit_form %}
+<div class="mb-2">
+  <label class="form-label"><i class="bi bi-tag me-1"></i>Interest Name</label>
+  <input type="text" name="name" id="editName" class="form-control" placeholder="e.g. Engineering, Medicine, Arts" required>
+</div>
+{% endblock %}
+{% block edit_init %}document.getElementById('editName').value=btn.dataset.name;{% endblock %}
+{% block edit_action_prefix %}/interests/{% endblock %}
