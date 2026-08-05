@@ -39,8 +39,7 @@
         data-career="{{ d.career_path|default:'' }}"
         data-score="{{ d.job_score|default:'' }}"
         data-chances="{{ d.job_chances|default:'MEDIUM' }}"><i class="bi bi-pencil"></i> Edit</button>
-      <a href="{% url 'delete_program_detail' d.id %}" class="action-btn action-btn-danger"
-        onclick="return confirm('Delete this detail?')"><i class="bi bi-trash"></i> Delete</a>
+      <form method="POST" action="{% url 'delete_program_detail' d.id %}" style="display:inline" onsubmit="return confirm('Delete this detail?')">{% csrf_token %}<button type="submit" class="action-btn action-btn-danger"><i class="bi bi-trash"></i> Delete</button></form>
     </div>
   </td>
 </tr>

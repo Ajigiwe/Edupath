@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.institution_service import InstitutionService
 from core.models import Institution, InstitutionType, Level
@@ -51,6 +52,7 @@ def create_institution(request):
         messages.success(request, "Institution added successfully ✅")
 
         return redirect('institution_dashboard')
+    return redirect('institution_dashboard')
 
 
 # ✏️ UPDATE
@@ -67,11 +69,13 @@ def update_institution(request, institution_id):
             messages.error(request, "Institution not found ❌")
 
         return redirect('institution_dashboard')
+    return redirect('institution_dashboard')
 
 
 # ❌ SOFT DELETE
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_institution(request, institution_id):
     try:
         InstitutionService.delete(institution_id)

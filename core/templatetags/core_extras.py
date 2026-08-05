@@ -10,6 +10,14 @@ def get_item(dictionary, key):
 
 
 @register.filter
+def subtract(value, arg):
+    try:
+        return int(value) - int(arg)
+    except (TypeError, ValueError):
+        return 0
+
+
+@register.filter
 def has_feature(user, codename):
     return user_has_feature(user, codename)
 

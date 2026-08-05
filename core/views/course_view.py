@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.course_service import CourseService
 from core.models import Course, Department, Interest
@@ -36,6 +37,7 @@ def create_course(request):
         CourseService.create(request.POST)
         messages.success(request, "Course added successfully ✅")
         return redirect('course_dashboard')
+    return redirect('course_dashboard')
 
 
 @staff_required
@@ -45,10 +47,12 @@ def update_course(request, course_id):
         CourseService.update(course_id, request.POST)
         messages.success(request, "Course updated successfully ✅")
         return redirect('course_dashboard')
+    return redirect('course_dashboard')
 
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_course(request, course_id):
     CourseService.delete(course_id)
     messages.success(request, "Course deleted successfully ✅")

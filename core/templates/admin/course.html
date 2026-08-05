@@ -12,7 +12,7 @@
   <td>
     <div class="action-group">
       <button class="action-btn edit-btn" data-id="{{ c.id }}" data-name="{{ c.coursename }}" data-department="{{ c.department.id }}"><i class="bi bi-pencil"></i> Edit</button>
-      <a href="{% url 'delete_course' c.id %}" class="action-btn action-btn-danger" onclick="return confirm('Delete this course?')"><i class="bi bi-trash"></i> Delete</a>
+      <form method="POST" action="{% url 'delete_course' c.id %}" style="display:inline" onsubmit="return confirm('Delete this course?')">{% csrf_token %}<button type="submit" class="action-btn action-btn-danger"><i class="bi bi-trash"></i> Delete</button></form>
     </div>
   </td>
 </tr>

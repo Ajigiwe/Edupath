@@ -75,6 +75,11 @@ class Subject(models.Model):
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='ELECTIVE')
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'category'], name='unique_subject_name_category'),
+        ]
+
     def __str__(self):
         return self.name
 

@@ -93,9 +93,9 @@
                         <div class="mt-3 mb-3">
                             <small class="text-muted fw-semibold">Job market score</small>
                             <div class="job-score-bar">
-                                <div class="job-score-fill" style="width: {{ p.job_score }}%"></div>
+                                <div class="job-score-fill" style="width: {{ p.job_score|default:0 }}%"></div>
                             </div>
-                            <small class="text-muted">{{ p.job_score }}%</small>
+                            <small class="text-muted">{{ p.job_score|default:0 }}%</small>
                         </div>
                         <div class="career-actions">
                             <button class="btn btn-link p-0 about-btn"

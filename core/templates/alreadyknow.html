@@ -1,5 +1,6 @@
 {% extends 'base2.html' %}
 {% load static %}
+{% load core_extras %}
 {% block content %}
 
 <section class="alreadyknow-hero">
@@ -114,14 +115,12 @@
                             <p class="program-meta"><i class="bi bi-geo-alt-fill me-2"></i>{{ p.institution.location }}</p>
                         </div>
                         <div class="mb-3">
-                            {% if selected_cutoff %}
-                                {% with cutoff_int=selected_cutoff|add:"0" %}
+                            {% if cutoff_int %}
                                 {% if cutoff_int <= p.cutoff_point %}
                                 <span class="badge qualify-badge"><i class="bi bi-check-circle me-1"></i>You Qualify</span>
                                 {% else %}
-                                <span class="badge need-badge"><i class="bi bi-exclamation-circle me-1"></i>Need {{ p.cutoff_point|add:"-"|add:selected_cutoff }} more</span>
+                                <span class="badge need-badge"><i class="bi bi-exclamation-circle me-1"></i>Need {{ cutoff_int|subtract:p.cutoff_point }} more</span>
                                 {% endif %}
-                                {% endwith %}
                             {% endif %}
                             {% with tier=p.admission_tiers.first %}
                             {% if tier %}

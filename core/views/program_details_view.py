@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.program_details_service import ProgramDetailsService
 from core.models import ProgramDetails, Program, Institution
@@ -115,6 +116,7 @@ def create_program_detail(request):
             messages.error(request, "Already exists ❌")
 
         return redirect('program_details_dashboard')
+    return redirect('program_details_dashboard')
 
 
 @staff_required
@@ -128,6 +130,7 @@ def update_program_detail(request, detail_id):
             messages.error(request, "Not found ❌")
 
         return redirect('program_details_dashboard')
+    return redirect('program_details_dashboard')
 
 # def update_program_detail(request, detail_id):
 #     if request.method == 'POST':
@@ -137,6 +140,7 @@ def update_program_detail(request, detail_id):
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_program_detail(request, detail_id):
     try:
         ProgramDetailsService.delete(detail_id)

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from core.decorators import staff_required
 from core.models import Institution, Program, Department, Level, SchoolLevel, Course
 from core.models import TheoryQuestion, MCQQuestion, MCQOption
 
@@ -40,6 +41,7 @@ def past_questions(request, id):
     })
 
 
+@staff_required
 @login_required(login_url='login')
 def add_theory_page(request):
     return render(request, 'add_theory.html', {
@@ -50,6 +52,7 @@ def add_theory_page(request):
     })
 
 
+@staff_required
 @login_required(login_url='login')
 def add_mcq_page(request):
     return render(request, 'add_mcq.html', {
@@ -60,6 +63,7 @@ def add_mcq_page(request):
     })
 
 
+@staff_required
 @login_required(login_url='login')
 def create_theory(request):
     if request.method == "POST":
@@ -76,6 +80,7 @@ def create_theory(request):
     return redirect('add_theory_page')
 
 
+@staff_required
 @login_required(login_url='login')
 def create_mcq(request):
     if request.method == "POST":

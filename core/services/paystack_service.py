@@ -1,5 +1,6 @@
 import uuid
 import requests
+from decimal import Decimal
 from django.urls import reverse
 from core.models import SiteSettings
 
@@ -19,12 +20,26 @@ def _headers():
     }
 
 
+def _ghs_to_kobo(amount_ghs):
+    """Convert a GHS amount (Decimal or str/number) to kobo without float rounding loss."""
+    amount = Decimal(str(amount_ghs))
+    return int((amount * 100).to_integral_value())
+
+
+def _parse_json(resp):
+    """Safely parse a requests response, handling non-JSON payloads."""
+    try:
+        return resp.json()
+    except ValueError:
+        return {'status': False, 'message': f'Invalid response from Paystack (HTTP {resp.status_code})'}
+
+
 def initialize_transaction(email, amount_ghs, plan_slug, request):
     settings = _get_settings()
     if not settings.paystack_secret_key:
         return {'status': False, 'message': 'Paystack keys not configured. Please contact admin.'}
 
-    amount_kobo = int(amount_ghs * 100)
+    amount_kobo = _ghs_to_kobo(amount_ghs)
     reference = str(uuid.uuid4()).replace('-', '')[:20]
 
     callback_url = request.build_absolute_uri(
@@ -49,7 +64,9 @@ def initialize_transaction(email, amount_ghs, plan_slug, request):
             headers=_headers(),
             timeout=30,
         )
-        data = resp.json()
+        if not resp.ok:
+            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}'}
+        data = _parse_json(resp)
         if data.get('status'):
             return {
                 'status': True,
@@ -73,7 +90,9 @@ def verify_transaction(reference):
             headers=_headers(),
             timeout=30,
         )
-        data = resp.json()
+        if not resp.ok:
+            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}'}
+        data = _parse_json(resp)
         if data.get('status') and data['data'].get('status') == 'success':
             return {
                 'status': True,

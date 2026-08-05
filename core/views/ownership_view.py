@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.ownership_service import OwnershipService
 from core.models import Ownership
@@ -37,6 +38,7 @@ def create_ownership(request):
         OwnershipService.create(request.POST)
         messages.success(request, "Ownership added successfully ✅")
         return redirect('ownership_dashboard')
+    return redirect('ownership_dashboard')
 
 
 @staff_required
@@ -46,10 +48,12 @@ def update_ownership(request, ownership_id):
         OwnershipService.update(ownership_id, request.POST)
         messages.success(request, "Ownership updated successfully ✅")
         return redirect('ownership_dashboard')
+    return redirect('ownership_dashboard')
 
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_ownership(request, ownership_id):
     OwnershipService.delete(ownership_id)
     messages.success(request, "Ownership deleted successfully ✅")

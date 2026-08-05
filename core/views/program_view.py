@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from core.messages.program_messages import ProgramMessages
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 from django.db.models import Count, Q as models_Q
 
 
@@ -53,6 +54,7 @@ def create_program(request):
         messages.success(request, ProgramMessages.CREATE_SUCCESS)
 
         return redirect('program_dashboard')
+    return redirect('program_dashboard')
 
 
 @staff_required
@@ -68,10 +70,12 @@ def update_program(request, program_id):
             messages.error(request, ProgramMessages.NOT_FOUND)
 
         return redirect('program_dashboard')
+    return redirect('program_dashboard')
 
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_program(request, program_id):
     try:
         ProgramService.delete(program_id)

@@ -558,7 +558,9 @@ for (let i = 0; i < localStorage.length; i++) {
 <script>
 
 // ================= RESET QUIZ =================
-document.getElementById("resetQuiz").addEventListener("click", function () {
+var resetQuizBtn = document.getElementById("resetQuiz");
+if (resetQuizBtn) {
+resetQuizBtn.addEventListener("click", function () {
 
     // Remove saved answers
     let keysToRemove = [];
@@ -588,6 +590,7 @@ document.getElementById("resetQuiz").addEventListener("click", function () {
     alert("Quiz has been reset.");
 
 });
+}
 </script>
 
 <!-- <script>

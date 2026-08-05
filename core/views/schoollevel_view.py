@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.schoollevel_service import SchoolLevelService
 from core.models import SchoolLevel
@@ -34,6 +35,7 @@ def create_schoollevel(request):
         SchoolLevelService.create(request.POST)
         messages.success(request, "Level added ✅")
         return redirect('schoollevel_dashboard')
+    return redirect('schoollevel_dashboard')
 
 
 @staff_required
@@ -43,10 +45,12 @@ def update_schoollevel(request, level_id):
         SchoolLevelService.update(level_id, request.POST)
         messages.success(request, "Updated ✅")
         return redirect('schoollevel_dashboard')
+    return redirect('schoollevel_dashboard')
 
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_schoollevel(request, level_id):
     SchoolLevelService.delete(level_id)
     messages.success(request, "Deleted ✅")

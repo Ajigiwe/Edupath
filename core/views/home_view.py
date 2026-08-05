@@ -57,6 +57,7 @@ def alreadyknow(request):
         'programs': programs_page,
         'programs_list': program_list,
         'selected_cutoff': cutoff or '',
+        'cutoff_int': cutoff_int,
         'selected_program': program_id or '',
         'prereq_info': prereq_info,
         'viable_streams': viable_streams,

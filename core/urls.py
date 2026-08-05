@@ -38,11 +38,9 @@ urlpatterns = [
 
     path('institutions_list/', institutions_list, name='institutions'),
     path('past-questions/<uuid:id>/', past_questions, name='past_questions'),
-        # ADD
+    # ADD
     #path('add-theory/', create_theory, name='create_theory'),
     #path('add-mcq/', create_mcq, name='create_mcq'),
-    # path('pastquestion/', past_questions, name='pastquestion'),
-    path('past-questions/', past_questions, name='past_questions'),
     path('login/', login_view, name='login'),
     path('signup/', signup_view, name='signup'),
     path('logout/', logout_view, name='logout'),

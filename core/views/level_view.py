@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from core.services.level_service import LevelService
 from core.models import Level
@@ -48,6 +49,7 @@ def create_level(request):
         messages.success(request, "Level added successfully ✅")
 
         return redirect('level_dashboard')
+    return redirect('level_dashboard')
 
 
 # ✏️ UPDATE
@@ -64,11 +66,13 @@ def update_level(request, level_id):
             messages.error(request, "Level not found ❌")
 
         return redirect('level_dashboard')
+    return redirect('level_dashboard')
 
 
 # ❌ SOFT DELETE
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_level(request, level_id):
     try:
         LevelService.delete(level_id)

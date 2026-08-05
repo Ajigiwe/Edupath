@@ -1,9 +1,9 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from core.models import SubscriptionPlan, PlanFeature, UserSubscription, Payment, UserActivity
-from core.services.paystack_service import initialize_transaction, verify_transaction
-from decimal import Decimal
+from core.models import SubscriptionPlan, UserSubscription, Payment, UserActivity
+from core.services.paystack_service import initialize_transaction, verify_transaction, _ghs_to_kobo
 
 
 def plans_view(request):
@@ -17,7 +17,7 @@ def plans_view(request):
 def my_subscription(request):
     try:
         sub = request.user.subscription
-    except Exception:
+    except UserSubscription.DoesNotExist:
         sub = None
     payments = Payment.objects.filter(user=request.user)[:10]
     plans = SubscriptionPlan.objects.filter(is_active=True)
@@ -48,7 +48,7 @@ def subscribe(request, plan_slug):
             amount=0,
             provider='FREE',
             status='SUCCESS',
-            transaction_id=f'free-{plan.slug}',
+            transaction_id=f'free-{plan.slug}-{request.user.id}',
             notes=f'Free subscription to {plan.name}',
         )
         messages.success(request, f'Subscribed to {plan.name}')
@@ -56,21 +56,23 @@ def subscribe(request, plan_slug):
 
     result = initialize_transaction(
         email=request.user.email,
-        amount_ghs=float(plan.price_monthly),
+        amount_ghs=plan.price_monthly,
         plan_slug=plan.slug,
         request=request,
     )
 
     if result.get('status'):
-        sub, created = UserSubscription.objects.get_or_create(
-            user=request.user,
-            defaults={'plan': plan, 'status': 'TRIAL'}
-        )
-        if not created:
-            sub.plan = plan
-            sub.status = 'TRIAL'
-            sub.save()
-        UserActivity.objects.create(user=request.user, activity_type='PLAN_CHANGE', description=f'Started subscription to {plan.name} (GHS {plan.price_monthly}/mo)')
+        # Keep the user's current subscription untouched until payment succeeds.
+        try:
+            sub = request.user.subscription
+        except UserSubscription.DoesNotExist:
+            free_plan = SubscriptionPlan.objects.filter(slug='free').first()
+            sub = UserSubscription.objects.create(
+                user=request.user,
+                plan=free_plan,
+                status='ACTIVE',
+            )
+
         Payment.objects.create(
             user=request.user,
             subscription=sub,
@@ -78,8 +80,9 @@ def subscribe(request, plan_slug):
             provider='PAYSTACK',
             status='PENDING',
             transaction_id=result['reference'],
-            notes=f'Payment for {plan.name}|{plan.slug}',
+            notes=json.dumps({'plan_slug': plan.slug, 'plan_name': plan.name}),
         )
+        messages.info(request, 'Complete the payment to activate your new plan.')
         return redirect(result['authorization_url'])
 
     messages.error(request, result.get('message', 'Payment initialization failed.'))
@@ -93,29 +96,61 @@ def paystack_callback(request):
         messages.error(request, 'No transaction reference found.')
         return redirect('my_subscription')
 
+    payment = Payment.objects.filter(transaction_id=reference, provider='PAYSTACK').first()
+    if not payment:
+        messages.error(request, 'Payment record not found.')
+        return redirect('my_subscription')
+
+    # Ownership check — the payment must belong to the requesting user.
+    if payment.user_id != request.user.id:
+        messages.error(request, 'This payment does not belong to your account.')
+        return redirect('my_subscription')
+
+    if payment.status == 'SUCCESS':
+        messages.info(request, 'Payment already processed.')
+        return redirect('my_subscription')
+
     result = verify_transaction(reference)
 
     if result.get('status'):
-        payment = Payment.objects.filter(transaction_id=reference, provider='PAYSTACK').first()
-        if payment and payment.status == 'PENDING':
-            payment.status = 'SUCCESS'
-            payment.save()
+        # Amount verification — ensure what was charged matches what we recorded.
+        paid_kobo = int(result['data'].get('amount', 0))
+        expected_kobo = _ghs_to_kobo(payment.amount)
+        if paid_kobo != expected_kobo:
+            messages.error(request, 'Payment amount does not match the plan price. Please contact support.')
+            return redirect('my_subscription')
 
-            sub = payment.subscription
-            if sub:
-                sub.status = 'ACTIVE'
-                plan_slug = payment.notes.split('|')[1] if '|' in payment.notes else None
-                if plan_slug:
-                    new_plan = SubscriptionPlan.objects.filter(slug=plan_slug).first()
-                    if new_plan:
-                        sub.plan = new_plan
-                sub.save()
-            UserActivity.objects.create(user=payment.user, activity_type='PLAN_CHANGE', description=f'Payment completed — {payment.notes.split("|")[0] if "|" in payment.notes else "plan activated"}')
+        payment.status = 'SUCCESS'
+        payment.save()
 
-            messages.success(request, 'Payment successful! Your subscription is now active.')
-        else:
-            messages.info(request, 'Payment already processed.')
+        sub = payment.subscription
+        if not sub:
+            sub, _ = UserSubscription.objects.get_or_create(user=request.user)
+
+        plan_slug = None
+        plan_name = 'plan activated'
+        if payment.notes:
+            try:
+                notes = json.loads(payment.notes)
+                plan_slug = notes.get('plan_slug')
+                plan_name = notes.get('plan_name', 'plan activated')
+            except (ValueError, TypeError):
+                plan_slug = None
+
+        if plan_slug:
+            new_plan = SubscriptionPlan.objects.filter(slug=plan_slug).first()
+            if new_plan:
+                sub.plan = new_plan
+                plan_name = new_plan.name
+
+        sub.status = 'ACTIVE'
+        sub.save()
+        UserActivity.objects.create(user=payment.user, activity_type='PLAN_CHANGE', description=f'Payment completed — {plan_name}')
+
+        messages.success(request, 'Payment successful! Your subscription is now active.')
     else:
+        payment.status = 'FAILED'
+        payment.save()
         messages.error(request, result.get('message', 'Payment verification failed.'))
 
     return redirect('my_subscription')

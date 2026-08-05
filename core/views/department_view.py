@@ -3,6 +3,7 @@
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 
 from core.services.department_service import DepartmentService
 from core.models import Department, Institution
@@ -76,6 +77,7 @@ def create_department(request):
         DepartmentService.create(request.POST)
         messages.success(request, "Department added ✅")
         return redirect('department_dashboard')
+    return redirect('department_dashboard')
 
 
 @staff_required
@@ -85,10 +87,12 @@ def update_department(request, department_id):
         DepartmentService.update(department_id, request.POST)
         messages.success(request, "Updated ✅")
         return redirect('department_dashboard')
+    return redirect('department_dashboard')
 
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_department(request, department_id):
     DepartmentService.delete(department_id)
     messages.success(request, "Deleted ✅")

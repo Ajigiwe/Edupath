@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from core.decorators import staff_required
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 
 @staff_required
@@ -41,6 +42,7 @@ def create_interest(request):
 
         messages.success(request, "Interest added successfully ✅")
         return redirect('interest_dashboard')
+    return redirect('interest_dashboard')
 
 
 @staff_required
@@ -55,6 +57,7 @@ def update_interest(request, interest_id):
 
 @staff_required
 @login_required(login_url='login')
+@require_POST
 def delete_interest(request, interest_id):
     InterestService.delete(interest_id)
     messages.success(request, "Deleted successfully ✅")

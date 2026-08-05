@@ -202,15 +202,36 @@ def get_subject_match_details(grades, prerequisites):
 
 
 def recommend(shs_stream_slug, grades, interest_ids, passion_area=None):
-    from core.models import Program, ProgramDetails, ProgramPrerequisite
+    from django.db.models import Prefetch
+    from core.models import Program, ProgramDetails, ProgramPrerequisite, ProgramAdmissionTier, AlternativePathway
 
     results = []
     stretch = []
     not_viable = []
 
     programs = Program.objects.filter(is_active=True).prefetch_related(
-        'prerequisites__subject', 'interests', 'programdetails_set__institution',
-        'programdetails_set__admission_tiers', 'programdetails_set__alternative_pathways'
+        'interests',
+        Prefetch(
+            'prerequisites',
+            queryset=ProgramPrerequisite.objects.select_related('subject'),
+            to_attr='cached_prerequisites',
+        ),
+        Prefetch(
+            'programdetails_set',
+            queryset=ProgramDetails.objects.filter(is_active=True).prefetch_related(
+                Prefetch(
+                    'admission_tiers',
+                    queryset=ProgramAdmissionTier.objects.filter(is_active=True),
+                    to_attr='cached_tiers',
+                ),
+                Prefetch(
+                    'alternative_pathways',
+                    queryset=AlternativePathway.objects.filter(is_active=True),
+                    to_attr='cached_alternatives',
+                ),
+            ),
+            to_attr='cached_programdetails',
+        ),
     )
 
     for program in programs:
@@ -224,7 +245,7 @@ def recommend(shs_stream_slug, grades, interest_ids, passion_area=None):
             })
             continue
 
-        prerequisites = list(program.prerequisites.select_related('subject').all())
+        prerequisites = list(program.cached_prerequisites)
         details = get_subject_match_details(grades, prerequisites)
         all_required_met = all(
             d['met'] for d in details if d['level'] == 'Required'
@@ -234,8 +255,8 @@ def recommend(shs_stream_slug, grades, interest_ids, passion_area=None):
         best_tier = None
         best_pd = None
 
-        for pd in program.programdetails_set.filter(is_active=True):
-            tiers = pd.admission_tiers.filter(is_active=True)
+        for pd in program.cached_programdetails:
+            tiers = pd.cached_tiers
             for tier in tiers:
                 if student_aggregate is not None and student_aggregate <= tier.cutoff_aggregate:
                     if best_tier is None or tier.cutoff_aggregate < best_tier.cutoff_aggregate:
@@ -289,7 +310,7 @@ def recommend(shs_stream_slug, grades, interest_ids, passion_area=None):
                 })
             continue
 
-        alternatives = list(best_pd.alternative_pathways.filter(is_active=True)) if best_pd else []
+        alternatives = list(best_pd.cached_alternatives)
 
         results.append({
             'program': program,

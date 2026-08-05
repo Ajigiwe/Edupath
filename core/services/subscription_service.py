@@ -1,7 +1,17 @@
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
-from core.models import PlanFeature
+from django.utils import timezone
+from core.models import UserSubscription
+
+
+def _is_active(sub):
+    """A subscription is active if its status allows features and it has not expired."""
+    if sub.status not in ('ACTIVE', 'TRIAL') or not sub.plan:
+        return False
+    if sub.end_date and timezone.now() > sub.end_date:
+        return False
+    return True
 
 
 def get_user_plan_features(user):
@@ -10,12 +20,12 @@ def get_user_plan_features(user):
         return set()
     try:
         sub = user.subscription
-        if sub.status not in ('ACTIVE', 'TRIAL') or not sub.plan:
+        if not _is_active(sub):
             return set()
         return set(
             sub.plan.planfeaturethrough_set.values_list('feature__codename', flat=True)
         )
-    except user.__class__.subscription.RelatedObjectDoesNotExist:
+    except UserSubscription.DoesNotExist:
         return set()
 
 
@@ -25,10 +35,10 @@ def user_has_feature(user, codename):
         return False
     try:
         sub = user.subscription
-        if sub.status not in ('ACTIVE', 'TRIAL'):
+        if not _is_active(sub):
             return False
         return sub.plan.planfeaturethrough_set.filter(feature__codename=codename).exists()
-    except Exception:
+    except UserSubscription.DoesNotExist:
         return False
 
 
