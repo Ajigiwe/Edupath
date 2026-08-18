@@ -25,11 +25,63 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'assets/main.css' %}" />
 
+    <style>
+    .msgs-wrap {
+      position: fixed; top: 76px; right: 1.25rem; z-index: 2000;
+      display: flex; flex-direction: column; gap: 0.6rem; max-width: 380px;
+    }
+    .msgs-toast {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary);
+      border-radius: 10px; padding: 0.75rem 0.85rem; font-size: 0.85rem; color: var(--text);
+      box-shadow: 0 6px 18px rgba(30,58,95,0.12); animation: msgsIn 0.25s ease;
+    }
+    .msgs-toast i { font-size: 1rem; margin-top: 0.1rem; flex-shrink: 0; }
+    .msgs-success { border-left-color: #16a34a; }
+    .msgs-success i { color: #16a34a; }
+    .msgs-error { border-left-color: #dc2626; }
+    .msgs-error i { color: #dc2626; }
+    .msgs-warning { border-left-color: #d97706; }
+    .msgs-warning i { color: #d97706; }
+    .msgs-info { border-left-color: var(--primary); }
+    .msgs-info i { color: var(--primary); }
+    .msgs-close {
+      margin-left: auto; border: none; background: none; color: var(--text-muted);
+      cursor: pointer; font-size: 0.8rem; padding: 0.15rem; line-height: 1;
+    }
+    .msgs-close:hover { color: var(--text); }
+    @keyframes msgsIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+    @media (max-width: 576px) {
+      .msgs-wrap { left: 1rem; right: 1rem; max-width: none; }
+    }
+    </style>
+
 </head>
 
 <body>
     
     {% include 'partials/user_navbar.html' %}
+
+    {% if messages %}
+    <div class="msgs-wrap">
+      {% for message in messages %}
+      <div class="msgs-toast msgs-{{ message.tags }}">
+        <i class="bi {% if 'success' in message.tags %}bi-check-circle-fill{% elif 'error' in message.tags %}bi-exclamation-circle-fill{% elif 'warning' in message.tags %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+        <span>{{ message }}</span>
+        <button type="button" class="msgs-close" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(function(){
+        document.querySelectorAll('.msgs-toast').forEach(function(t){
+          t.style.transition='opacity 0.4s, transform 0.4s';
+          t.style.opacity='0'; t.style.transform='translateX(12px)';
+          setTimeout(function(){ t.remove(); }, 400);
+        });
+      }, 5000);
+    </script>
+    {% endif %}
 
     {% block content %}
     {% endblock %}
