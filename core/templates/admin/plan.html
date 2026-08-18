@@ -7,8 +7,15 @@
 <div class="stats-row">
   <div class="stat-mini">
     <div class="stat-mini-icon" style="background:#e8f0fe;color:#1e3a5f"><i class="bi bi-credit-card-fill"></i></div>
-    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_plans }}</span><span class="stat-mini-label">Total Plans</span></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_plans }}</span><span class="stat-mini-label">Active Plans</span></div>
   </div>
+  {% if total_inactive > 0 %}
+  <div class="stat-mini">
+    <div class="stat-mini-icon" style="background:#fee2e2;color:#991b1b"><i class="bi bi-archive-fill"></i></div>
+    <div class="stat-mini-info"><span class="stat-mini-value">{{ total_inactive }}</span><span class="stat-mini-label">Inactive</span></div>
+  </div>
+  <a class="btn btn-outline-secondary btn-sm ms-auto" style="align-self:center" href="?show_inactive=1{% if search %}&search={{ search }}{% endif %}">Show inactive</a>
+  {% endif %}
 </div>
 {% endblock %}
 
@@ -79,8 +86,8 @@
 {% block base_pagination %}
 {% if plans.has_other_pages %}
 <div class="pagination-wrap" style="margin-top:1rem">
-  {% if plans.has_previous %}<a class="page-btn" href="?page={{ plans.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">← Previous</a>{% endif %}
-  {% if plans.has_next %}<a class="page-btn" href="?page={{ plans.next_page_number }}{% if search %}&search={{ search }}{% endif %}">Next →</a>{% endif %}
+  {% if plans.has_previous %}<a class="page-btn" href="?page={{ plans.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if show_inactive %}&show_inactive=1{% endif %}">← Previous</a>{% endif %}
+  {% if plans.has_next %}<a class="page-btn" href="?page={{ plans.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if show_inactive %}&show_inactive=1{% endif %}">Next →</a>{% endif %}
 </div>
 {% endif %}
 {% endblock %}

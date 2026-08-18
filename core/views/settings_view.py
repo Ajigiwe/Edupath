@@ -27,6 +27,17 @@ def site_settings_view(request):
             messages.success(request, 'Paystack keys updated successfully.')
             return redirect('site_settings')
 
+        if action == 'save_sms':
+            settings_obj.sms_provider = request.POST.get('sms_provider', '').strip()
+            settings_obj.sms_sender_id = request.POST.get('sms_sender_id', '').strip()
+            new_sms_key = request.POST.get('sms_api_key', '').strip()
+            if new_sms_key:
+                settings_obj.sms_api_key = new_sms_key
+            settings_obj.sms_api_url = request.POST.get('sms_api_url', '').strip()
+            settings_obj.save()
+            messages.success(request, 'SMS settings updated successfully.')
+            return redirect('site_settings')
+
     return render(request, 'admin/settings.html', {
         'settings': settings_obj,
         'has_secret': bool(settings_obj.paystack_secret_key),

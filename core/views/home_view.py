@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from core.models import ProgramDetails, Interest, Program, SHSStream, Subject, SHSStreamSubject, UserActivity
 from core.services.recommender import recommend, calculate_fit_score, get_category, calculate_aggregate
+from core.services.subscription_service import user_has_feature
 from django.core.paginator import Paginator
 from django.db.models import Prefetch
 
@@ -93,6 +94,7 @@ def careeroutcome(request):
         'selected_program': program_id or '',
         'selected_program_obj': selected_program,
         'prereq_info': prereq_info,
+        'can_career_detailed': user_has_feature(request.user, 'career_detailed'),
     })
 
 

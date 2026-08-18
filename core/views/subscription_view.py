@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from core.models import SubscriptionPlan, UserSubscription, Payment, UserActivity
+from core.models import SubscriptionPlan, UserSubscription, Payment, UserActivity, UserProfile
 from core.services.paystack_service import initialize_transaction, verify_transaction, _ghs_to_kobo
 
 
@@ -90,8 +90,35 @@ def subscribe(request, plan_slug):
         messages.success(request, f'Subscribed to {plan.name}')
         return redirect('my_subscription')
 
+    # Handle modal form submission (full_name, email)
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not full_name or not email:
+            messages.error(request, 'Full name and email are required.')
+            return redirect('plans')
+
+        # Update user's name and email
+        if full_name:
+            parts = full_name.split(' ', 1)
+            request.user.first_name = parts[0]
+            request.user.last_name = parts[1] if len(parts) > 1 else ''
+        if email:
+            request.user.email = email
+        request.user.save()
+
+    # Fallback email if still not set
+    email = request.user.email
+    if not email:
+        profile = getattr(request.user, 'userprofile', None)
+        if profile and profile.phone:
+            email = f"{profile.phone}@user.edupath.local"
+        else:
+            email = f"user_{request.user.id}@user.edupath.local"
+
     result = initialize_transaction(
-        email=request.user.email,
+        email=email,
         amount_ghs=plan.price_monthly,
         plan_slug=plan.slug,
         request=request,

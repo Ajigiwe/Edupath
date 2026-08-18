@@ -1,7 +1,7 @@
 # core/urls.py
 from django.urls import path
 from core.views.home_view import findmypath, alreadyknow, careeroutcome, stream_subjects_api, page_view
-from core.views.auth_view import login_view, logout_view, signup_view, request_otp
+from core.views.auth_view import login_view, logout_view, signup_view, request_otp, staff_login_view
 from core.views.institutions_list_view import institutions_list
 
 from core.views.pastquestion_view import past_questions
@@ -22,7 +22,7 @@ from core.views.program_details_view import *
 from core.views.interest_view import *
 from core.views.profile_view import profile_view, update_profile, change_password
 from core.views.subscription_view import plans_view, my_subscription, subscribe, paystack_callback
-from core.views.terminal_view import terminal_home, terminal_upload, terminal_result
+from core.views.terminal_view import terminal_home, terminal_upload, terminal_result, terminal_analysis_overall
 from core.views.settings_view import site_settings_view, download_backup, restore_backup, clear_data
 from core.views.admin_dashboard_view import admin_dashboard
 from core.views.plan_view import plan_dashboard, create_plan, update_plan, delete_plan
@@ -49,6 +49,7 @@ urlpatterns = [
     #path('add-theory/', create_theory, name='create_theory'),
     #path('add-mcq/', create_mcq, name='create_mcq'),
     path('login/', login_view, name='login'),
+    path('staff-login/', staff_login_view, name='staff_login'),
     path('signup/', signup_view, name='signup'),
     path('request-otp/', request_otp, name='request_otp'),
     path('logout/', logout_view, name='logout'),
@@ -147,6 +148,7 @@ urlpatterns = [
     path('terminal/', terminal_home, name='terminal_home'),
     path('terminal/upload/', terminal_upload, name='terminal_upload'),
     path('terminal/result/<uuid:report_id>/', terminal_result, name='terminal_result'),
+    path('terminal/analysis/', terminal_analysis_overall, name='terminal_analysis_overall'),
 
     # ================= Users =================
     path('users/', user_dashboard, name='user_dashboard'),

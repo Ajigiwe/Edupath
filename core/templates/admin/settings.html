@@ -33,6 +33,69 @@
   </div>
 </div>
 
+<div class="card border-0 shadow-sm mt-4" style="max-width:700px">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom:1px solid var(--border)">
+      <div style="width:42px;height:42px;background:#e8f0fe;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#1e3a5f;font-size:1.2rem">
+        <i class="bi bi-chat-dots-fill"></i>
+      </div>
+      <div>
+        <h5 class="mb-0" style="font-weight:700;color:var(--text)">SMS Gateway (OTP Delivery)</h5>
+        <small class="text-muted">Configure SMS provider for OTP delivery</small>
+      </div>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="save_sms">
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;color:var(--text);font-size:0.9rem"><i class="bi bi-gear-fill me-1"></i>SMS Provider</label>
+        <select name="sms_provider" class="form-select" id="id_sms_provider">
+          <option value="custom" {% if settings.sms_provider == 'custom' or not settings.sms_provider %}selected{% endif %}>Custom HTTP API</option>
+          <option value="termii" {% if settings.sms_provider == 'termii' %}selected{% endif %}>Termii (Ghana/Nigeria)</option>
+          <option value="twilio" {% if settings.sms_provider == 'twilio' %}selected{% endif %}>Twilio</option>
+        </select>
+        <small class="text-muted">Select your SMS provider. Custom uses a generic HTTP POST.</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;color:var(--text);font-size:0.9rem"><i class="bi bi-tag-fill me-1"></i>Sender ID</label>
+        <input type="text" name="sms_sender_id" class="form-control" value="{{ settings.sms_sender_id }}" placeholder="EduPath" maxlength="11">
+        <small class="text-muted">Max 11 characters for Termii. Appears as the sender on recipient's phone.</small>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:600;color:var(--text);font-size:0.9rem"><i class="bi bi-key-fill me-1"></i>API Key / Token</label>
+        <input type="password" name="sms_api_key" class="form-control" value="" placeholder="{% if settings.sms_api_key %}•••••••••••••••• (stored — enter new to replace){% else %}Your API key or token{% endif %}" autocomplete="off">
+        <small class="text-muted">{% if settings.sms_api_key %}A key is already saved. Leave blank to keep it unchanged.{% else %}For Termii: your API key. For Twilio: "account_sid:auth_token". For Custom: your Bearer token.{% endif %}</small>
+      </div>
+      <div class="mb-3" id="custom_url_field" style="display:none">
+        <label class="form-label" style="font-weight:600;color:var(--text);font-size:0.9rem"><i class="bi bi-link-45deg me-1"></i>Custom API Endpoint</label>
+        <input type="url" name="sms_api_url" class="form-control" value="{{ settings.sms_api_url }}" placeholder="https://api.example.com/send">
+        <small class="text-muted">Required for Custom provider. POSTed with JSON: {phone, message, sender_id}. Auth: Bearer token from API Key.</small>
+      </div>
+      <button type="submit" class="btn btn-primary px-4" style="border-radius:8px;font-weight:600"><i class="bi bi-check-lg me-1"></i>Save SMS Settings</button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('id_sms_provider').addEventListener('change', function() {
+  document.getElementById('custom_url_field').style.display = this.value === 'custom' ? 'block' : 'none';
+});
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+  var el = document.getElementById('id_sms_provider');
+  if (el) el.dispatchEvent(new Event('change'));
+});
+</script>
+
+<div class="mt-4 p-3" style="background:#fff;border:1px solid var(--border);border-radius:10px;max-width:700px">
+  <p class="mb-1 fw-semibold" style="color:var(--text);font-size:0.85rem"><i class="bi bi-info-circle-fill me-1" style="color:var(--primary)"></i>SMS Setup Guide:</p>
+  <ol class="mb-0 ps-3" style="font-size:0.82rem;color:var(--text-muted)">
+    <li><strong>Termii (recommended for Ghana):</strong> Sign up at <a href="https://termii.com" target="_blank">termii.com</a>, get API key from dashboard. Sender ID max 11 chars.</li>
+    <li><strong>Twilio:</strong> Get Account SID and Auth Token from <a href="https://console.twilio.com" target="_blank">Twilio Console</a>. Use format "account_sid:auth_token" as API key.</li>
+    <li><strong>Custom HTTP:</strong> Provide an endpoint that accepts POST with JSON {phone, message, sender_id}. Auth via Bearer token (API Key field).</li>
+  </ol>
+</div>
+
 <div class="mt-4 p-3" style="background:#fff;border:1px solid var(--border);border-radius:10px;max-width:700px">
   <p class="mb-1 fw-semibold" style="color:var(--text);font-size:0.85rem"><i class="bi bi-info-circle-fill me-1" style="color:var(--primary)"></i>How to get your Paystack keys:</p>
   <ol class="mb-0 ps-3" style="font-size:0.82rem;color:var(--text-muted)">

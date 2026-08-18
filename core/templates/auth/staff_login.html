@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | EduPath Ghana</title>
+    <title>Staff Login | EduPath Ghana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -17,23 +17,18 @@
     <div class="auth-banner">
         <div class="auth-banner-inner">
             <div class="auth-logo">
-                <i class="bi bi-mortarboard-fill"></i>
+                <i class="bi bi-shield-lock-fill"></i>
             </div>
-            <h2 class="auth-tagline">Find your path.</h2>
-            <p class="auth-desc">Discover university programmes tailored to your SHS background, interests, and academic performance.</p>
-            <div class="auth-testimonial">
-                <div class="auth-avatar"><i class="bi bi-chat-quote-fill"></i></div>
-                <p class="auth-quote">"EduPath helped me find the perfect programme. I never knew so many options existed for my stream."</p>
-                <span class="auth-author">— Adwoa M., UG '26</span>
-            </div>
+            <h2 class="auth-tagline">Staff Portal</h2>
+            <p class="auth-desc">Manage EduPath Ghana — institutions, programmes, users, plans, and payments from one dashboard.</p>
         </div>
     </div>
     <div class="auth-form-panel">
         <div class="auth-form-inner">
             <div class="auth-form-header">
-                <div class="auth-form-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <h3 class="auth-form-title">Welcome back</h3>
-                <p class="auth-form-sub">Sign in to continue</p>
+                <div class="auth-form-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                <h3 class="auth-form-title">Staff sign in</h3>
+                <p class="auth-form-sub">Restricted access for platform administrators</p>
             </div>
 
             {% if messages %}
@@ -42,40 +37,28 @@
                 {% endfor %}
             {% endif %}
 
-            <div class="auth-tabs">
-                <button type="button" class="auth-tab active" data-tab="student"><i class="bi bi-person me-1"></i>Student</button>
-            </div>
-
-            <!-- Student: phone + master PIN -->
-            <form method="POST" class="auth-form-pane" data-pane="student">
+            <form method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="mode" value="student">
                 <div class="auth-field">
-                    <label class="auth-label">Phone number</label>
+                    <label class="auth-label">Username</label>
                     <div class="auth-input-wrap">
-                        <i class="bi bi-telephone auth-input-icon"></i>
-                        <input type="tel" name="phone" class="auth-input" placeholder="e.g. 0241234567" required>
+                        <i class="bi bi-person auth-input-icon"></i>
+                        <input type="text" name="username" class="auth-input" placeholder="Enter your username" required>
                     </div>
                 </div>
                 <div class="auth-field">
-                    <label class="auth-label">Master PIN</label>
+                    <label class="auth-label">Password</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock auth-input-icon"></i>
-                        <input type="password" name="pin" class="auth-input" inputmode="numeric" placeholder="Enter your 4-6 digit PIN" required style="padding-right:2.6rem">
+                        <input type="password" name="password" class="auth-input" placeholder="Enter your password" required style="padding-right:2.6rem">
                         <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
-                </div>
-                <div class="auth-options">
-                    <a href="{% url 'request_otp' %}" class="auth-forgot">Forgot PIN?</a>
                 </div>
                 <button type="submit" class="auth-btn"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</button>
             </form>
 
             <p class="auth-switch">
-                Don't have an account? <a href="{% url 'signup' %}">Create one</a>
-            </p>
-            <p class="auth-staff-link">
-                <a href="{% url 'staff_login' %}"><i class="bi bi-shield-lock me-1"></i>Staff sign in</a>
+                <a href="{% url 'login' %}">← Back to student sign in</a>
             </p>
         </div>
     </div>
@@ -85,14 +68,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--background); }
 
-.auth-wrap {
-    display: flex;
-    min-height: 100vh;
-}
+.auth-wrap { display: flex; min-height: 100vh; }
 
 .auth-banner {
     flex: 1;
-    background: var(--primary);
+    background: linear-gradient(135deg, #1e3a5f, #111827);
     display: none;
     align-items: center;
     justify-content: center;
@@ -123,11 +103,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     background: rgba(255,255,255,0.03);
 }
 
-.auth-banner-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 400px;
-}
+.auth-banner-inner { position: relative; z-index: 1; max-width: 400px; }
 
 .auth-logo {
     width: 56px;
@@ -158,40 +134,6 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     margin-bottom: 2.5rem;
 }
 
-.auth-testimonial {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 1.5rem;
-}
-
-.auth-avatar {
-    width: 32px;
-    height: 32px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.5);
-    font-size: 0.85rem;
-    margin-bottom: 0.8rem;
-}
-
-.auth-quote {
-    color: rgba(255,255,255,0.8);
-    font-size: 0.88rem;
-    line-height: 1.6;
-    font-style: italic;
-    margin-bottom: 0.6rem;
-}
-
-.auth-author {
-    color: rgba(255,255,255,0.4);
-    font-size: 0.78rem;
-    font-weight: 500;
-}
-
 .auth-form-panel {
     flex: 1;
     display: flex;
@@ -200,20 +142,14 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     padding: 2rem;
 }
 
-.auth-form-inner {
-    width: 100%;
-    max-width: 380px;
-}
+.auth-form-inner { width: 100%; max-width: 380px; }
 
-.auth-form-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
+.auth-form-header { text-align: center; margin-bottom: 1.5rem; }
 
 .auth-form-icon {
     width: 56px;
     height: 56px;
-    background: var(--primary);
+    background: #111827;
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -223,17 +159,8 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     margin: 0 auto 1rem;
 }
 
-.auth-form-title {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 0.25rem;
-}
-
-.auth-form-sub {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
+.auth-form-title { font-family: 'Poppins', sans-serif; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+.auth-form-sub { color: var(--text-muted); font-size: 0.9rem; }
 
 .auth-alert {
     background: #fee2e2;
@@ -246,48 +173,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     align-items: center;
 }
 
-.auth-tabs {
-    display: flex;
-    background: var(--background-light);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 1.5rem;
-}
+.auth-field { margin-bottom: 1.2rem; }
 
-.auth-tab {
-    flex: 1;
-    padding: 0.55rem;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    font-family: inherit;
-}
+.auth-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
 
-.auth-tab.active {
-    background: var(--primary);
-    color: #fff;
-}
-
-.auth-field {
-    margin-bottom: 1.2rem;
-}
-
-.auth-label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.4rem;
-}
-
-.auth-input-wrap {
-    position: relative;
-}
+.auth-input-wrap { position: relative; }
 
 .auth-input-icon {
     position: absolute;
@@ -335,25 +225,10 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 
 .auth-input::placeholder { color: var(--text-muted); opacity: 0.6; }
 
-.auth-options {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1.5rem;
-}
-
-.auth-forgot {
-    font-size: 0.85rem;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.auth-forgot:hover { text-decoration: underline; }
-
 .auth-btn {
     width: 100%;
     padding: 0.85rem;
-    background: var(--primary);
+    background: #111827;
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -367,7 +242,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     font-family: inherit;
 }
 
-.auth-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.auth-btn:hover { background: #1e3a5f; transform: translateY(-1px); }
 .auth-btn:active { transform: translateY(0); }
 
 .auth-switch {
@@ -377,17 +252,8 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     margin-top: 1.8rem;
 }
 
-.auth-switch a {
-    color: var(--primary);
-    font-weight: 600;
-    text-decoration: none;
-}
-
+.auth-switch a { color: var(--primary); font-weight: 600; text-decoration: none; }
 .auth-switch a:hover { text-decoration: underline; }
-
-.auth-staff-link { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1.4rem; }
-.auth-staff-link a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
-.auth-staff-link a:hover { color: var(--primary); }
 
 @media (min-width: 900px) {
     .auth-banner { display: flex; }
@@ -395,15 +261,6 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 </style>
 
 <script>
-document.querySelectorAll('.auth-tab').forEach(function(tab){
-    tab.addEventListener('click', function(){
-        var target = this.dataset.tab;
-        document.querySelectorAll('.auth-tab').forEach(function(t){ t.classList.toggle('active', t === tab); });
-        document.querySelectorAll('.auth-form-pane').forEach(function(pane){
-            pane.classList.toggle('d-none', pane.dataset.pane !== target);
-        });
-    });
-});
 document.querySelectorAll('.auth-eye').forEach(function(btn){
     btn.addEventListener('click', function(){
         var input = this.previousElementSibling;

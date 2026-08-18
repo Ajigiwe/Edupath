@@ -255,9 +255,9 @@ class MCQQuestionAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['phone', 'user', 'has_master_pin', 'created_at']
+    list_display = ['phone', 'user', 'stream', 'has_master_pin', 'created_at']
     search_fields = ['phone', 'user__username', 'user__email']
-    list_filter = ['created_at']
+    list_filter = ['created_at', 'stream']
     readonly_fields = ['master_pin_hash', 'created_at', 'updated_at']
 
     def has_master_pin(self, obj):
@@ -268,9 +268,9 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 @admin.register(TermReport)
 class TermReportAdmin(admin.ModelAdmin):
-    list_display = ['user', 'term_number', 'stream', 'aggregate', 'created_at']
+    list_display = ['user', 'year', 'term', 'stream', 'aggregate', 'created_at']
     search_fields = ['user__username', 'user__profile__phone']
-    list_filter = ['stream', 'term_number']
+    list_filter = ['stream', 'year', 'term']
 
 
 @admin.register(SiteSettings)

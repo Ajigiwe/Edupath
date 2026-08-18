@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from core.models import SubscriptionPlan, UserSubscription, UserActivity, UserProfile
 from core.services.otp_service import generate_otp, build_pending, verify_pending
+from core.services.sms_service import send_otp_sms
 
 
 def _normalize_phone(phone):
@@ -18,26 +19,34 @@ def _is_valid_pin(pin):
     return pin and pin.isdigit() and 4 <= len(pin) <= 6
 
 
-def _display_otp(request, phone, otp):
-    """No SMS gateway available yet — show the OTP on screen (simulated SMS)."""
+def _send_otp(request, phone, otp):
+    """Send OTP via SMS. Falls back to on-screen display if SMS fails."""
+    success, error = send_otp_sms(phone, otp)
+    if success:
+        return None
+    # Fallback: show on screen (simulated SMS)
     return otp
+
+
+def staff_login_view(request):
+    """Staff-only login (username + password) → admin dashboard."""
+    if request.user.is_authenticated and not request.user.is_staff:
+        return redirect('home')
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+        user = authenticate(request, username=username, password=password)
+        if user and user.is_staff:
+            login(request, user)
+            UserActivity.objects.create(user=user, activity_type='LOGIN', description=f'Staff login from {request.META.get("REMOTE_ADDR", "unknown")}')
+            return redirect('admin_dashboard')
+        messages.error(request, "Invalid username or password.")
+        return render(request, 'auth/staff_login.html')
+    return render(request, 'auth/staff_login.html')
 
 
 def login_view(request):
     if request.method == "POST":
-        mode = request.POST.get("mode", "student")
-
-        if mode == "staff":
-            username = request.POST.get("username", "")
-            password = request.POST.get("password", "")
-            user = authenticate(request, username=username, password=password)
-            if user:
-                login(request, user)
-                UserActivity.objects.create(user=user, activity_type='LOGIN', description=f'Staff login from {request.META.get("REMOTE_ADDR", "unknown")}')
-                return redirect('admin_dashboard')
-            messages.error(request, "Invalid username or password.")
-            return render(request, 'auth/login.html', {'mode': 'staff'})
-
         # Student mode: phone + master PIN
         phone = _normalize_phone(request.POST.get("phone", ""))
         pin = request.POST.get("pin", "")
@@ -86,7 +95,7 @@ def signup_view(request):
             otp = generate_otp()
             request.session['signup_pending'] = build_pending(phone, otp)
             request.session.modified = True
-            display_otp = _display_otp(request, phone, otp)
+            display_otp = _send_otp(request, phone, otp)
             return render(request, 'auth/signup.html', {
                 'step': 'otp',
                 'phone': phone,
@@ -107,7 +116,7 @@ def signup_view(request):
                 return render(request, 'auth/signup.html', {
                     'step': 'otp',
                     'phone': pending['phone'],
-                    'display_otp': _display_otp(request, pending['phone'], pending['otp']),
+                    'display_otp': _send_otp(request, pending['phone'], pending['otp']),
                 })
 
             return render(request, 'auth/signup.html', {
@@ -185,10 +194,11 @@ def request_otp(request):
             otp = generate_otp()
             request.session['otp_pending'] = build_pending(phone, otp)
             request.session.modified = True
+            display_otp = _send_otp(request, phone, otp)
             return render(request, 'auth/otp.html', {
                 'step': 'otp',
                 'phone': phone,
-                'display_otp': _display_otp(request, phone, otp),
+                'display_otp': display_otp,
             })
 
         if step == "otp":
@@ -205,7 +215,7 @@ def request_otp(request):
                 return render(request, 'auth/otp.html', {
                     'step': 'otp',
                     'phone': pending['phone'],
-                    'display_otp': _display_otp(request, pending['phone'], pending['otp']),
+                    'display_otp': _send_otp(request, pending['phone'], pending['otp']),
                 })
             return render(request, 'auth/otp.html', {
                 'step': 'pin',

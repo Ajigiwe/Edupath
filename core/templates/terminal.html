@@ -10,39 +10,56 @@
   <div class="ta-hero">
     <div class="ta-icon"><i class="bi bi-graph-up-arrow"></i></div>
     <h1>Upload Term Results</h1>
-    <p>Enter your grades for this term and get a full progress analysis against your chosen path.</p>
+    <p>Select your SHS year, term, and stream, then enter your grades for each subject taken.</p>
   </div>
 
   <form method="POST" class="ta-form" id="taForm">
     {% csrf_token %}
     <div class="ta-row">
       <div class="ta-field">
-        <label><i class="bi bi-diagram-3 me-1"></i> SHS Stream</label>
-        <select name="stream" id="taStream" class="ta-select" required>
-          <option value="">— Select your stream —</option>
-          {% for s in streams %}
-          <option value="{{ s.slug }}">{{ s.name }}</option>
+        <label><i class="bi bi-mortarboard me-1"></i> SHS Year</label>
+        <select name="year" class="ta-select" required>
+          <option value="">— Select year —</option>
+          {% for val, label in shs_years %}
+          <option value="{{ val }}">{{ label }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="ta-field ta-field-sm">
-        <label><i class="bi bi-123 me-1"></i> Term Number</label>
-        <input type="number" name="term_number" class="ta-input" value="{{ next_term }}" min="1" required>
+        <label><i class="bi bi-journal-richtext me-1"></i> Term</label>
+        <select name="term" class="ta-select" required>
+          <option value="">— Select term —</option>
+          {% for val, label in terms %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
       </div>
     </div>
 
-    <div class="ta-subjects" id="taSubjects">
-      <p class="ta-hint"><i class="bi bi-info-circle me-1"></i>Select a stream to load its subjects.</p>
+    <div class="ta-field">
+      <label><i class="bi bi-diagram-3 me-1"></i> SHS Stream</label>
+      <select name="stream" id="taStream" class="ta-select" required>
+        <option value="">— Select your stream —</option>
+        {% for s in streams %}
+        <option value="{{ s.slug }}" {% if s.slug == initial_stream_slug %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
     </div>
 
-    <button type="submit" class="ta-submit"><i class="bi bi-magic me-1"></i> Analyze My Results</button>
+    <div class="ta-subjects" id="taSubjects">
+      <p class="ta-hint"><i class="bi bi-info-circle me-1"></i>Select your stream above to load subject grade forms.</p>
+    </div>
+
+    <button type="submit" class="ta-submit" id="taSubmitBtn" disabled><i class="bi bi-magic me-1"></i> Analyze My Results</button>
   </form>
+
+  <p class="ta-hint"><i class="bi bi-lightbulb me-1"></i>Select <strong>SHS Year</strong>, <strong>Term</strong>, and <strong>Stream</strong> in order &mdash; your subjects will appear below.</p>
 
 {% elif mode == 'result' %}
   <!-- ========== RESULT ========== -->
   <div class="ta-hero">
     <div class="ta-icon"><i class="bi bi-clipboard-data"></i></div>
-    <h1>Term {{ report.term_number }} Analysis</h1>
+    <h1>SHS {{ report.year }}{% if report.year == 1 %}<sup>st</sup>{% elif report.year == 2 %}<sup>nd</sup>{% elif report.year == 3 %}<sup>rd</sup>{% endif %} — Term {{ report.term }} Analysis</h1>
     <p>{{ report.stream.name|default:'No stream selected' }} &middot; {{ report.created_at|date:"M j, Y" }}</p>
   </div>
 
@@ -99,13 +116,15 @@
     </div>
   </div>
 
-  <div class="ta-card">
+   <div class="ta-card">
     <h3><i class="bi bi-book me-1"></i> Subject Performance</h3>
+    <p class="ta-card-sub">Core subjects are listed in the first column, electives in the second.</p>
     <table class="ta-table">
-      <thead><tr><th>Subject</th><th>Grade</th><th>Status</th></tr></thead>
+      <thead><tr><th>Core Subjects</th><th>Grade</th><th>Status</th><th>Elective Subjects</th><th>Grade</th><th>Status</th></tr></thead>
       <tbody>
         {% for s in analysis.subjects %}
         <tr>
+          {% if s.is_core %}
           <td>{{ s.name }}</td>
           <td><b>{{ s.grade_label }}</b></td>
           <td>
@@ -113,6 +132,17 @@
             {% elif s.status == 'strong' %}<span class="ta-tag ta-tag-strong">Strength</span>
             {% else %}<span class="ta-tag ta-tag-ok">On track</span>{% endif %}
           </td>
+          <td></td><td></td><td></td>
+          {% else %}
+          <td></td><td></td><td></td>
+          <td>{{ s.name }}</td>
+          <td><b>{{ s.grade_label }}</b></td>
+          <td>
+            {% if s.status == 'weak' %}<span class="ta-tag ta-tag-weak">Focus area</span>
+            {% elif s.status == 'strong' %}<span class="ta-tag ta-tag-strong">Strength</span>
+            {% else %}<span class="ta-tag ta-tag-ok">On track</span>{% endif %}
+          </td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -121,7 +151,7 @@
 
   {% if comparison %}
   <div class="ta-card">
-    <h3><i class="bi bi-arrow-repeat me-1"></i> Progress vs Term {{ report.term_number|add:"-1" }}</h3>
+    <h3><i class="bi bi-arrow-repeat me-1"></i> Progress vs Previous Term</h3>
     {% if comparison.trend == 'IMPROVING' %}
     <div class="ta-banner" style="background:#dcfce7;border-color:#86efac"><i class="bi bi-arrow-up-circle"></i><div><strong>Improving</strong> — aggregate moved from {{ comparison.agg_prev }} to {{ comparison.agg_cur }}.</div></div>
     {% elif comparison.trend == 'DECLINING' %}
@@ -155,7 +185,152 @@
   <div class="ta-actions">
     <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload Another Term</a>
     <a href="{% url 'terminal_home' %}" class="ta-btn ta-btn-ghost"><i class="bi bi-clock-history me-1"></i> All Reports</a>
+    <a href="{% url 'terminal_analysis_overall' %}" class="ta-btn ta-btn-ghost"><i class="bi bi-bar-chart-steps me-1"></i> Overall Analysis</a>
   </div>
+
+{% elif mode == 'analysis' %}
+  <!-- ========== OVERALL ANALYSIS ========== -->
+  {% if overall %}
+  <div class="ta-hero">
+    <div class="ta-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <h1>Overall Progress Analysis</h1>
+    <p>SHS {{ reports.first.year|default:'1' }} to SHS {{ reports.last.year|default:'1' }} &middot; {{ reports|length }} term{{ reports|pluralize }} recorded</p>
+  </div>
+
+  <!-- Aggregate Trend -->
+  <div class="ta-card">
+    <h3><i class="bi bi-trend-up me-1"></i> Aggregate Trend</h3>
+    {% if overall.agg_trend %}
+    <p class="ta-card-sub">
+      Trend: <strong>
+      {% if overall.agg_trend == 'IMPROVING' %}<span class="ta-delta ta-delta-up"><i class="bi bi-arrow-up-circle me-1"></i>Improving</span>
+      {% elif overall.agg_trend == 'DECLINING' %}<span class="ta-delta ta-delta-down"><i class="bi bi-arrow-down-circle me-1"></i>Declining</span>
+      {% else %}<span class="ta-delta"><i class="bi bi-dash-circle me-1"></i>Steady</span>
+      {% endif %}
+      </strong> &middot; Average Aggregate: <strong>{{ overall.avg_aggregate|default:'—' }}</strong>
+    </p>
+    {% else %}
+    <p class="ta-card-sub">Not enough data for trend analysis.</p>
+    {% endif %}
+
+    <table class="ta-table">
+      <thead><tr><th>Term</th><th>Stream</th><th>Aggregate</th><th>Standing</th></tr></thead>
+      <tbody>
+        {% for ta in overall.term_analyses %}
+        <tr>
+          <td>SHS {{ ta.year }} Term {{ ta.term }}</td>
+          <td>{{ ta.report.stream.name|default:'—' }}</td>
+          <td><b>{{ ta.aggregate|default:'—' }}</b></td>
+          <td>
+            {% if ta.standing == 'STRONG' %}<span class="ta-tag ta-tag-strong">Strong</span>
+            {% elif ta.standing == 'ON_TRACK' %}<span class="ta-tag ta-tag-ok">On Track</span>
+            {% elif ta.standing == 'RISK' %}<span class="ta-tag ta-tag-weak">At Risk</span>
+            {% elif ta.standing == 'REVIEW' %}<span class="ta-tag ta-tag-weak">Review</span>
+            {% else %}<span class="ta-tag ta-tag-ok">{{ ta.standing }}</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Strengths & Weaknesses Grid -->
+  <div class="ta-grid">
+    <div class="ta-card">
+      <h3><i class="bi bi-emoji-laughing me-1"></i> Strengths</h3>
+      {% if overall.strengths %}
+      <ul class="ta-list">
+        {% for s in overall.strengths %}<li><b>{{ s.name }}</b> <span class="ta-cutoff">{{ s.consistency }}% consistent</span></li>{% endfor %}
+      </ul>
+      {% else %}<p class="ta-none">No consistent strengths identified yet. Keep building momentum!</p>{% endif %}
+    </div>
+
+    <div class="ta-card">
+      <h3><i class="bi bi-emoji-frown me-1"></i> Weaknesses</h3>
+      {% if overall.weaknesses %}
+      <ul class="ta-list">
+        {% for w in overall.weaknesses %}<li><b>{{ w.name }}</b> <span class="ta-cutoff">{{ w.weak_count }}/{{ w.total_terms }} terms failing</span></li>{% endfor %}
+      </ul>
+      {% else %}<p class="ta-none">No weak areas detected — keep up the great work!</p>{% endif %}
+    </div>
+  </div>
+
+  <!-- Subject History Table -->
+  <div class="ta-card">
+    <h3><i class="bi bi-book me-1"></i> Subject History</h3>
+    <p class="ta-card-sub">Track your grades across all terms. Green = strength (&le;3), orange = at risk (4&ndash;5), red = failing (&ge;6).</p>
+    <div class="ta-table-wrap">
+      <table class="ta-table">
+        <thead>
+          <tr>
+            <th>Core</th><th>Subject</th>
+            {% for yt in overall.year_terms %}<th>{{ yt.year }}T{{ yt.term }}</th>{% endfor %}
+            <th>Latest</th>
+          </tr>
+        </thead>
+      <tbody>
+        {% for s in overall.subject_history %}
+        <tr>
+          <td>{% if s.is_core %}<span class="ta-tag ta-tag-ok">Core</span>{% else %}<span class="ta-tag ta-tag-ok">Elec</span>{% endif %}</td>
+          <td><b>{{ s.name }}</b></td>
+          {% for g in s.grade_cells %}<td>
+            <span class="ta-grade-badge {% if g.value <= 3 %}ta-grade-strong{% elif g.value <= 5 %}ta-grade-ok{% else %}ta-grade-weak{% endif %}">{{ g.label }}</span>
+          </td>{% empty %}<td>—</td>{% endfor %}
+          <td><b>{{ s.latest_grade }}</b></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if overall.improved_subjects or overall.declined_subjects %}
+  <div class="ta-card">
+    <h3><i class="bi bi-arrow-right-circle me-1"></i> Biggest Movers</h3>
+    {% if overall.improved_subjects %}
+    <p class="ta-card-sub"><i class="bi bi-arrow-up-circle me-1" style="color:#16a34a"></i> <strong>Improving:</strong> {{ overall.improved_subjects|join:", " }}</p>
+    {% endif %}
+    {% if overall.declined_subjects %}
+    <p class="ta-card-sub"><i class="bi bi-arrow-down-circle me-1" style="color:#dc2626"></i> <strong>Declining:</strong> {{ overall.declined_subjects|join:", " }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Recommendation -->
+  {% if overall.recommendation %}
+  <div class="ta-banner" style="background:#e0f2fe;border-color:#93c5fd">
+    <i class="bi bi-lightbulb"></i>
+    <div><strong>Recommendation</strong> &mdash; {{ overall.recommendation }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Likely Programmes -->
+  {% if overall.likely_programs %}
+  <div class="ta-card">
+    <h3><i class="bi bi-mortarboard me-1"></i> Likely Programmes (based on best aggregate)</h3>
+    <ul class="ta-list">
+      {% for p in overall.likely_programs %}<li><i class="bi bi-check-circle-fill me-1"></i>{{ p.name }} <span class="ta-cutoff">cutoff ≤ {{ p.cutoff }}</span></li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="ta-actions">
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload More Results</a>
+    <a href="{% url 'terminal_home' %}" class="ta-btn ta-btn-ghost"><i class="bi bi-clock-history me-1"></i> All Reports</a>
+  </div>
+
+  {% else %}
+  <div class="ta-hero">
+    <div class="ta-icon"><i class="bi bi-inbox"></i></div>
+    <h1>Overall Progress Analysis</h1>
+    <p>Upload your term results to see your performance trends, strengths, and areas for improvement.</p>
+  </div>
+  <div class="ta-empty">
+    <i class="bi bi-graph-up-arrow"></i>
+    <p>No term reports yet.</p>
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-upload me-1"></i> Upload Your First Term</a>
+  </div>
+  {% endif %}
 
 {% else %}
   <!-- ========== HOME / HISTORY ========== -->
@@ -171,7 +346,7 @@
     <a href="{% url 'terminal_result' r.id %}" class="ta-hist-item">
       <div class="ta-hist-icon"><i class="bi bi-clipboard-data"></i></div>
       <div class="ta-hist-info">
-        <strong>Term {{ r.term_number }}</strong>
+         <strong>SHS {{ r.year }} — Term {{ r.term }}</strong>
         <span>{{ r.stream.name|default:'No stream' }} &middot; {{ r.created_at|date:"M j, Y" }}</span>
       </div>
       <div class="ta-hist-agg">Aggregate: <b>{{ r.aggregate|default:'—' }}</b></div>
@@ -180,7 +355,8 @@
     {% endfor %}
   </div>
   <div class="ta-actions">
-    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload Term {{ next_term }}</a>
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload Next Term</a>
+    <a href="{% url 'terminal_analysis_overall' %}" class="ta-btn ta-btn-ghost"><i class="bi bi-bar-chart-steps me-1"></i> Overall Analysis</a>
   </div>
   {% else %}
   <div class="ta-empty">
@@ -195,8 +371,11 @@
 
 <script>
 (function(){
+  var yearSel = document.querySelector('select[name="year"]');
+  var termSel = document.querySelector('select[name="term"]');
   var streamSel = document.getElementById('taStream');
   var subjectsBox = document.getElementById('taSubjects');
+  var submitBtn = document.getElementById('taSubmitBtn');
   if(!streamSel || !subjectsBox) return;
 
   var data = {{ stream_subjects_json|safe }};
@@ -207,24 +386,58 @@
       subjectsBox.innerHTML = '<p class="ta-hint"><i class="bi bi-info-circle me-1"></i>No subjects configured for this stream.</p>';
       return;
     }
-    var html = '<div class="ta-sub-grid">';
-    list.forEach(function(sub){
-      html += '<div class="ta-sub-cell">' +
-        '<label class="ta-sub-label">' + sub.name + '</label>' +
-        '<select name="grade_' + sub.name + '" class="ta-select">' +
-        '<option value="">Grade</option>' +
-        '<option value="1">A1</option><option value="2">B2</option><option value="3">B3</option>' +
-        '<option value="4">C4</option><option value="5">C5</option><option value="6">C6</option>' +
-        '<option value="7">D7</option><option value="8">E8</option><option value="9">F9</option>' +
-        '</select></div>';
-    });
-    html += '</div>';
+
+    var coreSubs = list.filter(function(s){ return s.is_core; });
+    var elecSubs = list.filter(function(s){ return !s.is_core; });
+
+    function buildSection(label, subs, icon){
+      if(!subs.length) return '';
+      var h = '<div class="ta-sub-section"><div class="ta-sub-section-header"><i class="bi ' + icon + ' me-1"></i><span class="ta-sub-section-title">' + label + '</span></div><div class="ta-sub-grid">';
+      subs.forEach(function(sub){
+        h += '<div class="ta-sub-cell">' +
+          '<label class="ta-sub-label">' + sub.name + '</label>' +
+          '<select name="grade_' + sub.name + '" class="ta-select">' +
+          '<option value="">Grade</option>' +
+          '<option value="1">A1 (1)</option>' +
+          '<option value="2">B2 (2)</option>' +
+          '<option value="3">B3 (3)</option>' +
+          '<option value="4">C4 (4)</option>' +
+          '<option value="5">C5 (5)</option>' +
+          '<option value="6">C6 (6)</option>' +
+          '<option value="7">D7 (7)</option>' +
+          '<option value="8">E8 (8)</option>' +
+          '<option value="9">F9 (9)</option>' +
+          '</select></div>';
+      });
+      h += '</div></div>';
+      return h;
+    }
+
+    var html = '';
+    html += buildSection('Core Subjects', coreSubs, 'bi-book');
+    html += buildSection('Elective Subjects', elecSubs, 'bi-lightbulb');
     subjectsBox.innerHTML = html;
   }
 
+  function updateSubmitState(){
+    var hasYear = yearSel ? yearSel.value : '';
+    var hasTerm = termSel ? termSel.value : '';
+    var hasStream = streamSel.value;
+    if(submitBtn) submitBtn.disabled = !(hasYear && hasTerm && hasStream);
+  }
+
+  if(yearSel) yearSel.addEventListener('change', updateSubmitState);
+  if(termSel) termSel.addEventListener('change', updateSubmitState);
   streamSel.addEventListener('change', function(){
     renderSubjects(this.value);
+    updateSubmitState();
   });
+
+  // Auto-render if a stream is pre-selected
+  if(streamSel.value){
+    renderSubjects(streamSel.value);
+    updateSubmitState();
+  }
 })();
 </script>
 
@@ -252,6 +465,12 @@
 .ta-select:focus, .ta-input:focus { border-color: #1e3a5f; }
 
 .ta-subjects { margin: 1rem 0; }
+.ta-sub-section { margin-bottom: 1rem; }
+.ta-sub-section-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.82rem; font-weight: 700; color: #1e3a5f;
+  margin-bottom: 0.5rem;
+}
 .ta-sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
 .ta-sub-cell { border: 1px solid #e7e5e4; border-radius: 8px; padding: 0.6rem; }
 .ta-sub-label { display: block; font-size: 0.78rem; font-weight: 600; color: #44403c; margin-bottom: 0.35rem; }
@@ -263,7 +482,8 @@
   cursor: pointer; transition: background 0.2s, transform 0.15s;
   display: flex; align-items: center; justify-content: center; font-family: inherit;
 }
-.ta-submit:hover { background: #152a45; transform: translateY(-1px); }
+.ta-submit:hover:not(:disabled) { background: #152a45; transform: translateY(-1px); }
+.ta-submit:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
 
 .ta-banner {
   display: flex; align-items: flex-start; gap: 0.6rem;
@@ -297,6 +517,13 @@
 .ta-tag-weak { background: #fee2e2; color: #991b1b; }
 .ta-tag-strong { background: #dcfce7; color: #166534; }
 .ta-tag-ok { background: #f5f5f4; color: #44403c; }
+
+.ta-grade-badge { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.45rem; border-radius: 6px; }
+.ta-grade-strong { background: #dcfce7; color: #166534; }
+.ta-grade-ok { background: #fef3c7; color: #92400e; }
+.ta-grade-weak { background: #fee2e2; color: #991b1b; }
+
+.ta-table-wrap { overflow-x: auto; }
 
 .ta-delta { font-weight: 700; font-size: 0.85rem; }
 .ta-delta-up { color: #16a34a; }

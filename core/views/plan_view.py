@@ -11,18 +11,24 @@ from django.views.decorators.http import require_POST
 @login_required(login_url='login')
 def plan_dashboard(request):
     search = request.GET.get('search') or None
-    plan_list = SubscriptionPlan.objects.all()
+    show_inactive = request.GET.get('show_inactive') == '1'
+    plan_list = SubscriptionPlan.objects.filter(is_active=True)
+    if show_inactive:
+        plan_list = SubscriptionPlan.objects.all()
     if search:
         plan_list = plan_list.filter(name__icontains=search)
     paginator = Paginator(plan_list, 10)
     plans = paginator.get_page(request.GET.get('page'))
     features = PlanFeature.objects.filter(is_active=True)
-    total_plans = SubscriptionPlan.objects.count()
+    total_plans = SubscriptionPlan.objects.filter(is_active=True).count()
+    total_inactive = SubscriptionPlan.objects.filter(is_active=False).count()
     return render(request, 'admin/plan.html', {
         'plans': plans,
         'features': features,
         'total_plans': total_plans,
+        'total_inactive': total_inactive,
         'search': search,
+        'show_inactive': show_inactive,
     })
 
 

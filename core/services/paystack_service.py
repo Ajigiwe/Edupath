@@ -39,7 +39,14 @@ def initialize_transaction(email, amount_ghs, plan_slug, request):
     if not settings.paystack_secret_key:
         return {'status': False, 'message': 'Paystack keys not configured. Please contact admin.'}
 
+    # Basic validation before calling Paystack
+    if not email or '@' not in email:
+        return {'status': False, 'message': 'Invalid email address'}
+    
     amount_kobo = _ghs_to_kobo(amount_ghs)
+    if amount_kobo < 50:  # Paystack minimum is 50 kobo (GHS 0.50)
+        return {'status': False, 'message': 'Amount too low (minimum GHS 0.50)'}
+
     reference = str(uuid.uuid4()).replace('-', '')[:20]
 
     callback_url = request.build_absolute_uri(
@@ -65,7 +72,7 @@ def initialize_transaction(email, amount_ghs, plan_slug, request):
             timeout=30,
         )
         if not resp.ok:
-            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}'}
+            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}: {resp.text}'}
         data = _parse_json(resp)
         if data.get('status'):
             return {
@@ -91,7 +98,7 @@ def verify_transaction(reference):
             timeout=30,
         )
         if not resp.ok:
-            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}'}
+            return {'status': False, 'message': f'Paystack returned HTTP {resp.status_code}: {resp.text}'}
         data = _parse_json(resp)
         if data.get('status') and data['data'].get('status') == 'success':
             return {

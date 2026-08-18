@@ -9,6 +9,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     phone = models.CharField(max_length=20, unique=True, help_text="Primary login identifier")
     master_pin_hash = models.CharField(max_length=255, blank=True)
+    stream = models.ForeignKey('SHSStream', on_delete=models.SET_NULL, null=True, blank=True, related_name='user_profiles')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -451,6 +452,14 @@ class SiteSettings(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     paystack_public_key = models.CharField(max_length=255, blank=True, help_text="Live Paystack public key")
     paystack_secret_key = models.CharField(max_length=255, blank=True, help_text="Live Paystack secret key (keep secret)")
+    sms_provider = models.CharField(max_length=50, blank=True, choices=[
+        ('termii', 'Termii'),
+        ('twilio', 'Twilio'),
+        ('custom', 'Custom HTTP API'),
+    ], help_text="SMS provider for OTP delivery")
+    sms_api_key = models.CharField(max_length=255, blank=True, help_text="SMS provider API key / token")
+    sms_sender_id = models.CharField(max_length=50, blank=True, help_text="Sender ID (e.g. EduPath)")
+    sms_api_url = models.CharField(max_length=500, blank=True, help_text="Custom API endpoint (for custom provider)")
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -516,15 +525,16 @@ class TermReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='term_reports')
     stream = models.ForeignKey(SHSStream, on_delete=models.SET_NULL, null=True, blank=True)
-    term_number = models.PositiveIntegerField(default=1)
+    year = models.PositiveSmallIntegerField(choices=[(1,"SHS 1"),(2,"SHS 2"),(3,"SHS 3")])
+    term = models.PositiveSmallIntegerField(choices=[(1,"Term 1"),(2,"Term 2")])
     grades = models.JSONField(default=dict, help_text="Map of {subject_name: WAEC grade value 1-9}")
     aggregate = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-term_number']
-        unique_together = ['user', 'term_number']
+        ordering = ['-year', '-term']
+        unique_together = ['user', 'year', 'term']
 
     def __str__(self):
         return f"{self.user.username} — Term {self.term_number} ({self.aggregate if self.aggregate is not None else '—'})"
