@@ -1,3 +1,4 @@
+{% load core_extras %}
 <nav class="desktop-nav">
   <div class="nav-inner">
     <a class="nav-brand" href="{% url 'home' %}">
@@ -10,15 +11,20 @@
       <a class="nav-lk {% if request.resolver_match.url_name == 'findmypath' %}active{% endif %}" href="{% url 'findmypath' %}">Find My Path</a>
       <a class="nav-lk {% if request.resolver_match.url_name == 'alreadyknow' %}active{% endif %}" href="{% url 'alreadyknow' %}">Find Schools</a>
       <a class="nav-lk {% if request.resolver_match.url_name == 'careeroutcome' %}active{% endif %}" href="{% url 'careeroutcome' %}">Careers</a>
-      <a class="nav-lk {% if request.resolver_match.url_name == 'institutions' %}active{% endif %}" href="{% url 'institutions' %}">Practice</a>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'practice_home' %}active{% endif %}" href="{% url 'practice_home' %}">Practice</a>
     </div>
 
     <div class="nav-auth">
       {% if user.is_authenticated %}
+      <a class="auth-btn auth-btn-outline" href="{% url 'plans' %}">
+        <i class="bi bi-tags"></i>
+        Pricing
+      </a>
       <div class="auth-user dropdown">
         <a class="auth-user-inner" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-person-circle"></i>
           <span>{{ user.username }}</span>
+          <span class="plan-badge">{% user_plan_name %}</span>
           <i class="bi bi-chevron-down" style="font-size:0.6rem;margin-left:0.15rem"></i>
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
@@ -70,7 +76,7 @@
     <a class="dr-item {% if request.resolver_match.url_name == 'findmypath' %}active{% endif %}" href="{% url 'findmypath' %}"><i class="bi bi-compass-fill"></i> Find My Path</a>
     <a class="dr-item {% if request.resolver_match.url_name == 'alreadyknow' %}active{% endif %}" href="{% url 'alreadyknow' %}"><i class="bi bi-search"></i> Find Schools</a>
     <a class="dr-item {% if request.resolver_match.url_name == 'careeroutcome' %}active{% endif %}" href="{% url 'careeroutcome' %}"><i class="bi bi-briefcase-fill"></i> Careers</a>
-    <a class="dr-item {% if request.resolver_match.url_name == 'institutions' %}active{% endif %}" href="{% url 'institutions' %}"><i class="bi bi-pencil-square"></i> Practice</a>
+    <a class="dr-item {% if request.resolver_match.url_name == 'institutions' %}active{% endif %}" href="{% url 'practice_home' %}"><i class="bi bi-pencil-square"></i> Practice</a>
 
     <div class="dr-divider"></div>
 
@@ -81,9 +87,11 @@
         <span class="dr-name">{{ user.username }}</span>
         <span class="dr-email">{{ user.email|truncatechars:24 }}</span>
       </div>
+      <span class="plan-badge" style="margin-left:auto">{% user_plan_name %}</span>
     </div>
     <a class="dr-item" href="{% url 'profile' %}"><i class="bi bi-person"></i> Profile</a>
     <a class="dr-item" href="{% url 'my_subscription' %}"><i class="bi bi-layers"></i> My Plan</a>
+    <a class="dr-item" href="{% url 'plans' %}"><i class="bi bi-tags"></i> Pricing</a>
     <a class="dr-item dr-logout" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
     {% else %}
     <a class="dr-item" href="{% url 'plans' %}"><i class="bi bi-tags"></i> Pricing</a>
@@ -207,6 +215,13 @@
 .auth-user-inner i:first-child {
   font-size: 1rem;
   color: var(--primary);
+}
+.plan-badge {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 0.15rem 0.45rem; border-radius: 999px;
+  background: var(--primary); color: #fff;
+  line-height: 1;
 }
 .auth-user .dropdown-menu {
   margin-top: 0.4rem;
@@ -383,7 +398,14 @@ document.addEventListener('DOMContentLoaded', function(){
   var closeBtn = document.getElementById('drawerClose');
   function openDrawer(){ hamburger.classList.add('open'); drawer.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow='hidden'; }
   function closeDrawer(){ hamburger.classList.remove('open'); drawer.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow=''; }
-  hamburger.addEventListener('click', openDrawer);
+  function toggleDrawer(){
+    if (drawer.classList.contains('open')) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  }
+  hamburger.addEventListener('click', toggleDrawer);
   closeBtn.addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
   drawer.querySelectorAll('.dr-item').forEach(function(link){

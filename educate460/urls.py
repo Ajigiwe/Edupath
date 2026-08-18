@@ -26,5 +26,6 @@ urlpatterns = [
     path('', include('core.urls')),
     path('django-admin/', RedirectView.as_view(url='/admin-dashboard/', permanent=True)),
     path('admin/', RedirectView.as_view(url='/admin-dashboard/', permanent=True)),
+    path('dashboard/', RedirectView.as_view(url='/admin-dashboard/', permanent=False)),
 ]
     

@@ -1,0 +1,67 @@
+{% extends 'base2.html' %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="ph-icon"><i class="bi bi-shield-check-fill"></i></div>
+  <h1>Privacy Policy</h1>
+  <p>Effective July 2026 &bull; How we handle your data</p>
+</div>
+
+<div class="page-content">
+  <div class="pol-section">
+    <h3><i class="bi bi-database"></i> Information We Collect</h3>
+    <p>When you create an account, we collect your username, email address, SHS stream, subjects studied, and WASSCE grades. This information is used solely for generating programme recommendations and improving the EduPath matching engine.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-graph-up"></i> How We Use Your Data</h3>
+    <p>Your academic data powers the recommendation system. We analyse your profile against our database of 86+ programmes to surface the best matches. We never share your personal information with third parties without your explicit consent, and we will never sell your data.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-lock-fill"></i> Data Security</h3>
+    <p>We use industry-standard encryption (HTTPS, AES-256) and secure servers to protect your information. Payment processing is handled exclusively through Paystack — we never store your card details on our servers.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-person-check"></i> Your Rights</h3>
+    <p>You can access, update, or delete your profile data at any time through your account settings. If you delete your account, all associated data is permanently removed within 30 days. Questions? Contact us at <a href="mailto:support@edupathghana.com">support@edupathghana.com</a>.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-cookie"></i> Cookies</h3>
+    <p>EduPath uses essential session cookies to keep you logged in and remember your preferences. We do not use tracking or advertising cookies. You can disable cookies in your browser, but some features may not work properly.</p>
+  </div>
+</div>
+
+<style>
+.page-hero {
+  text-align:center;padding:3.5rem 1.5rem 2rem;
+  background:linear-gradient(to bottom,#fafaf9,#fff);
+}
+.ph-icon {
+  width:60px;height:60px;border-radius:16px;
+  background:#e6f7e6;color:#166534;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;margin:0 auto 1rem;
+}
+.page-hero h1 { font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:#1c1917;margin-bottom:0.4rem; }
+.page-hero p { color:#78716c;font-size:0.88rem;margin:0; }
+.page-content { max-width:720px;margin:0 auto;padding:0 1.5rem 4rem; }
+
+.pol-section {
+  background:#fff;border:1.5px solid #e7e5e4;border-radius:10px;
+  padding:1.15rem 1.35rem;margin-bottom:0.75rem;
+}
+.pol-section h3 {
+  display:flex;align-items:center;gap:0.45rem;
+  font-size:0.95rem;font-weight:700;color:#1c1917;margin-bottom:0.4rem;
+}
+.pol-section h3 i { color:#166534;font-size:0.85rem; }
+.pol-section p { color:#57534e;font-size:0.85rem;line-height:1.7;margin:0; }
+.pol-section a { color:#1e3a5f;font-weight:600;text-decoration:none; }
+.pol-section a:hover { text-decoration:underline; }
+
+@media(max-width:600px){ .page-hero h1{font-size:1.5rem} }
+</style>
+{% endblock %}

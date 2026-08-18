@@ -1,0 +1,144 @@
+{% extends 'base2.html' %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="ph-icon"><i class="bi bi-telephone-fill"></i></div>
+  <h1>Contact Us</h1>
+  <p>We're here to help. Reach out through any channel below.</p>
+</div>
+
+<div class="page-content">
+  <div class="contact-grid">
+    <a href="https://wa.me/233599213810" class="contact-card cc-whatsapp" target="_blank" rel="noopener">
+      <div class="cc-icon"><i class="bi bi-whatsapp"></i></div>
+      <div class="cc-body">
+        <strong>WhatsApp</strong>
+        <span>+233 599 213 810</span>
+        <small>Chat with us instantly</small>
+      </div>
+      <i class="bi bi-arrow-up-right cc-arrow"></i>
+    </a>
+
+    <a href="tel:+233599213810" class="contact-card cc-phone">
+      <div class="cc-icon"><i class="bi bi-telephone-fill"></i></div>
+      <div class="cc-body">
+        <strong>Call Us</strong>
+        <span>+233 599 213 810</span>
+        <small>Mon–Fri, 8 AM–5 PM GMT</small>
+      </div>
+      <i class="bi bi-telephone-forward cc-arrow"></i>
+    </a>
+
+    <a href="mailto:support@edupathghana.com" class="contact-card cc-email">
+      <div class="cc-icon"><i class="bi bi-envelope-fill"></i></div>
+      <div class="cc-body">
+        <strong>Email</strong>
+        <span>support@edupathghana.com</span>
+        <small>We reply within 24 hours</small>
+      </div>
+      <i class="bi bi-arrow-up-right cc-arrow"></i>
+    </a>
+  </div>
+
+  <div class="hours-box">
+    <div class="hours-header"><i class="bi bi-clock"></i> Business Hours</div>
+    <div class="hours-grid">
+      <div class="hour-row"><span>Monday — Friday</span><span>8:00 AM — 5:00 PM</span></div>
+      <div class="hour-row"><span>Saturday</span><span>9:00 AM — 1:00 PM</span></div>
+      <div class="hour-row hour-closed"><span>Sunday</span><span>Closed</span></div>
+    </div>
+  </div>
+
+  <div class="social-section">
+    <h3>Follow Us</h3>
+    <div class="social-links">
+      <a href="#" class="soc-link"><i class="bi bi-facebook"></i><span>Facebook</span></a>
+      <a href="#" class="soc-link"><i class="bi bi-twitter-x"></i><span>X</span></a>
+      <a href="#" class="soc-link"><i class="bi bi-instagram"></i><span>Instagram</span></a>
+      <a href="#" class="soc-link"><i class="bi bi-linkedin"></i><span>LinkedIn</span></a>
+    </div>
+  </div>
+</div>
+
+<style>
+.page-hero {
+  text-align:center; padding:3.5rem 1.5rem 2rem;
+  background: linear-gradient(to bottom, #fafaf9, #fff); /* solid fallback tone */
+}
+.ph-icon {
+  width:60px;height:60px;border-radius:16px;
+  background:#e8f0fe;color:#1e3a5f;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;margin:0 auto 1rem;
+}
+.page-hero h1 {
+  font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;
+  color:#1c1917;margin-bottom:0.4rem;
+}
+.page-hero p { color:#78716c;font-size:0.95rem;margin:0; }
+
+.page-content { max-width:800px;margin:0 auto;padding:0 1.5rem 4rem; }
+
+/* Contact cards */
+.contact-grid { display:flex;flex-direction:column;gap:0.75rem;margin-bottom:2rem; }
+.contact-card {
+  display:flex;align-items:center;gap:1rem;
+  padding:1.15rem 1.25rem;border-radius:12px;
+  border:1.5px solid #e7e5e4;background:#fff;
+  text-decoration:none;transition:all 0.2s;
+}
+.contact-card:hover { border-color:#1e3a5f;box-shadow:0 4px 16px rgba(30,58,95,0.06);transform:translateY(-1px); }
+.cc-icon {
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.cc-whatsapp .cc-icon { background:#dcfce7;color:#166534; }
+.cc-phone .cc-icon    { background:#e8f0fe;color:#1e3a5f; }
+.cc-email .cc-icon    { background:#fef3e2;color:#c2410c; }
+.cc-body { display:flex;flex-direction:column;flex:1;min-width:0; }
+.cc-body strong { font-size:0.9rem;color:#1c1917; }
+.cc-body span { font-size:0.85rem;color:#57534e;font-weight:500; }
+.cc-body small { font-size:0.72rem;color:#a8a29e;margin-top:0.1rem; }
+.cc-arrow { font-size:0.9rem;color:#a8a29e;flex-shrink:0;transition:transform 0.2s; }
+.contact-card:hover .cc-arrow { transform:translate(2px,-2px);color:#1e3a5f; }
+
+/* Hours */
+.hours-box {
+  background:#fafaf9;border:1px solid #e7e5e4;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:2rem;
+}
+.hours-header {
+  display:flex;align-items:center;gap:0.5rem;
+  font-size:0.95rem;font-weight:700;color:#1c1917;margin-bottom:0.85rem;
+}
+.hours-header i { color:#1e3a5f; }
+.hours-grid { display:flex;flex-direction:column;gap:0.5rem; }
+.hour-row {
+  display:flex;justify-content:space-between;
+  font-size:0.85rem;color:#57534e;padding:0.35rem 0;
+  border-bottom:1px solid #e7e5e4;
+}
+.hour-row:last-child { border-bottom:0; }
+.hour-closed span:last-child { color:#a8a29e; }
+
+/* Social */
+.social-section { text-align:center; }
+.social-section h3 { font-size:1rem;font-weight:700;color:#1c1917;margin-bottom:0.75rem; }
+.social-links { display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap; }
+.soc-link {
+  display:flex;align-items:center;gap:0.45rem;
+  padding:0.55rem 1rem;border:1.5px solid #d6d3d1;
+  border-radius:10px;color:#57534e;text-decoration:none;
+  font-size:0.84rem;font-weight:500;transition:all 0.15s;
+  background:#fff;
+}
+.soc-link:hover { border-color:#1e3a5f;color:#1e3a5f;background:#f5f0eb; }
+.soc-link i { font-size:1rem; }
+
+@media(max-width:600px){
+  .page-hero h1{font-size:1.5rem}
+  .social-links{gap:0.35rem}
+  .soc-link{padding:0.45rem 0.75rem;font-size:0.8rem}
+}
+</style>
+{% endblock %}

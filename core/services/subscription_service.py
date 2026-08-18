@@ -30,24 +30,28 @@ def get_user_plan_features(user):
 
 
 def user_has_feature(user, codename):
-    """Check if user has access to a specific feature."""
+    """Check if user has access to a specific feature or any of a list."""
     if not user.is_authenticated:
         return False
     try:
         sub = user.subscription
         if not _is_active(sub):
             return False
+        if isinstance(codename, (list, tuple)):
+            return sub.plan.planfeaturethrough_set.filter(feature__codename__in=codename).exists()
         return sub.plan.planfeaturethrough_set.filter(feature__codename=codename).exists()
     except UserSubscription.DoesNotExist:
         return False
 
 
 def plan_required(feature_codename):
-    """Decorator: redirects to plans page if user lacks the feature."""
+    """Decorator: gates authenticated users behind a plan feature.
+    Unauthenticated users pass through (they see enough to get interested).
+    """
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            if not user_has_feature(request.user, feature_codename):
+            if request.user.is_authenticated and not user_has_feature(request.user, feature_codename):
                 messages.warning(request, 'Upgrade your plan to access this feature.')
                 return redirect('plans')
             return view_func(request, *args, **kwargs)

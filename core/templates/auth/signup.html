@@ -77,14 +77,16 @@
                     <label class="auth-label">Password</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock auth-input-icon"></i>
-                        <input type="password" name="password" class="auth-input" placeholder="Create a password" required>
+                        <input type="password" name="password" class="auth-input" placeholder="Create a password" required style="padding-right:2.6rem">
+                        <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
                 </div>
                 <div class="auth-field">
                     <label class="auth-label">Confirm password</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock-fill auth-input-icon"></i>
-                        <input type="password" name="confirm" class="auth-input" placeholder="Confirm your password" required>
+                        <input type="password" name="confirm" class="auth-input" placeholder="Confirm your password" required style="padding-right:2.6rem">
+                        <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
                 </div>
                 <button type="submit" class="auth-btn"><i class="bi bi-person-plus me-2"></i>Create Account</button>
@@ -294,6 +296,21 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
 }
 
+.auth-eye {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px; height: 36px;
+    border: none; background: none;
+    color: var(--text-muted);
+    cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; transition: color 0.15s, background 0.15s;
+    z-index: 2;
+}
+.auth-eye:hover { color: var(--primary); background: var(--background-light); }
+
 .auth-input::placeholder { color: var(--text-muted); opacity: 0.6; }
 
 .auth-btn {
@@ -335,6 +352,18 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     .auth-banner { display: flex; }
 }
 </style>
+
+<script>
+document.querySelectorAll('.auth-eye').forEach(function(btn){
+    btn.addEventListener('click', function(){
+        var input = this.previousElementSibling;
+        var icon = this.querySelector('i');
+        var isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.className = 'bi ' + (isPassword ? 'bi-eye' : 'bi-eye-slash');
+    });
+});
+</script>
 
 </body>
 </html>

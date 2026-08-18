@@ -172,3 +172,9 @@ def stream_subjects_api(request, stream_slug):
         for ss in subjects
     ]
     return JsonResponse(data, safe=False)
+
+
+def page_view(request, slug):
+    """Renders a static page from templates/pages/<slug>.html"""
+    template_name = f'pages/{slug}.html'
+    return render(request, template_name)

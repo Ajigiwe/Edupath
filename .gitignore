@@ -29,3 +29,9 @@ venv/
 Thumbs.db
 
 # Project specific
+*.pptx
+*.pdf
+generate_pptx.py
+pdf_text.txt
+test_output.html
+UI_MODERNIZATION_SUMMARY.md

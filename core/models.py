@@ -259,6 +259,7 @@ class TheoryQuestion(models.Model):
     
     question = models.TextField()
     answer = models.TextField()
+    is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -275,6 +276,7 @@ class MCQQuestion(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE, null=True, blank=True)
     school_level = models.ForeignKey(SchoolLevel, on_delete=models.CASCADE, null=True, blank=True)
     question = models.TextField()
+    is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -293,6 +295,24 @@ class MCQOption(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class Flashcard(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True, blank=True)
+    school_level = models.ForeignKey(SchoolLevel, on_delete=models.SET_NULL, null=True, blank=True)
+
+    question = models.TextField()
+    answer = models.TextField()
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.question[:50]
 
 
 # ── Subscription / Pricing ──
@@ -443,3 +463,23 @@ class UserActivity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} — {self.get_activity_type_display()} ({self.created_at:%Y-%m-%d})"
+
+
+class PracticeSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='practice_sessions')
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
+    questions_json = models.JSONField(default=list)
+    answers_json = models.JSONField(default=list)
+    current_index = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
+    correct_count = models.IntegerField(default=0)
+    completed = models.BooleanField(default=False)
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-started_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.course.coursename if self.course else 'Any'} ({self.started_at:%Y-%m-%d %H:%M})"

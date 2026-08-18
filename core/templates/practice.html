@@ -1,0 +1,291 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block content %}
+
+<div class="practice-wrap">
+
+{% if state == 'select' %}
+  <!-- ========== COURSE SELECTOR ========== -->
+  <div class="ps-hero">
+    <div class="ps-icon"><i class="bi bi-pencil-square"></i></div>
+    <h1>Practice Questions</h1>
+    <p>Select a course to start a session of 30 randomly mixed questions (MCQ + Flashcards). Instant feedback after every answer.</p>
+  </div>
+
+  {% if active_session %}
+  <div class="ps-resume">
+    <i class="bi bi-arrow-repeat me-2"></i> You have an unfinished session. 
+    <a href="{% url 'practice_quiz' active_session.id %}" class="ps-resume-link">Continue</a>
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'practice_start' %}" class="ps-form">
+    {% csrf_token %}
+    <div class="ps-field">
+      <label><i class="bi bi-book me-1"></i> Choose a Course</label>
+      <select name="course" class="ps-select">
+        <option value="">All courses (mixed)</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}">{{ c.coursename }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="ps-field">
+      <label><i class="bi bi-collection me-1"></i> Question Type</label>
+      <div class="ps-type-toggles">
+        <label class="ps-type-opt">
+          <input type="radio" name="qtype" value="mixed" checked>
+          <span class="ps-type-label"><i class="bi bi-shuffle"></i> Mixed</span>
+        </label>
+        <label class="ps-type-opt">
+          <input type="radio" name="qtype" value="mcq">
+          <span class="ps-type-label"><i class="bi bi-list-check"></i> MCQ Only</span>
+        </label>
+        <label class="ps-type-opt">
+          <input type="radio" name="qtype" value="flashcard">
+          <span class="ps-type-label"><i class="bi bi-lightning-charge"></i> Flashcard Only</span>
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" class="ps-start-btn"><i class="bi bi-play-fill me-1"></i> Start Practice</button>
+  </form>
+
+{% elif state == 'quiz' %}
+  <!-- ========== QUIZ ========== -->
+  <div class="quiz-bar">
+    <div class="quiz-progress">
+      <div class="quiz-progress-fill" style="width:{% widthratio session.current_index session.total 100 %}%"></div>
+    </div>
+    <span class="quiz-counter">{{ session.current_index|add:1 }} / {{ session.total }}</span>
+  </div>
+
+  <div class="quiz-card">
+    <div class="qc-type {% if question.type == 'mcq' %}qc-mcq{% elif question.type == 'flashcard' %}qc-flash{% else %}qc-theory{% endif %}">
+      {% if question.type == 'mcq' %}<i class="bi bi-list-check me-1"></i>Multiple Choice
+      {% elif question.type == 'flashcard' %}<i class="bi bi-lightning-charge me-1"></i>Flashcard
+      {% else %}<i class="bi bi-pencil me-1"></i>Theory{% endif %}
+    </div>
+
+    <div class="qc-question">{{ question.question }}</div>
+
+    {% if question.type == 'mcq' %}
+    <form method="POST" id="quizForm">
+      {% csrf_token %}
+      <div class="qc-options">
+        {% for opt in question.options %}
+        <label class="qc-option" data-text="{{ opt.text }}">
+          <input type="radio" name="answer" value="{{ opt.text }}" required>
+          <span class="qc-opt-text">{{ opt.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <button type="submit" class="ps-btn">Submit Answer</button>
+    </form>
+
+    {% elif question.type == 'flashcard' %}
+    <div class="flash-area" id="flashArea">
+      <div class="flash-front" id="flashFront">
+        <i class="bi bi-lightbulb"></i>
+        <p>Tap to reveal answer</p>
+      </div>
+      <div class="flash-back" id="flashBack" style="display:none">
+        <div class="flash-answer">{{ question.answer }}</div>
+        <form method="POST" class="flash-self">
+          {% csrf_token %}
+          <button type="submit" name="self_assess" value="got_it" class="ps-btn ps-btn-green"><i class="bi bi-check-lg"></i> Got It</button>
+          <button type="submit" name="self_assess" value="review" class="ps-btn ps-btn-amber"><i class="bi bi-arrow-repeat"></i> Need Review</button>
+        </form>
+      </div>
+    </div>
+
+    {% elif question.type == 'theory' %}
+    <form method="POST" id="theoryForm">
+      {% csrf_token %}
+      <textarea name="answer" class="qc-textarea" placeholder="Type your answer here..." rows="4"></textarea>
+      <div class="theory-hint" id="theoryHint" style="display:none">
+        <div class="theory-model">
+          <strong><i class="bi bi-lightbulb me-1"></i> Model Answer:</strong>
+          <p>{{ question.answer }}</p>
+        </div>
+        <button type="submit" name="self_assess" value="got_it" class="ps-btn ps-btn-green"><i class="bi bi-check-lg"></i> Got It</button>
+        <button type="submit" name="self_assess" value="review" class="ps-btn ps-btn-amber"><i class="bi bi-arrow-repeat"></i> Need Review</button>
+      </div>
+      <button type="button" class="ps-btn ps-btn-outline" id="showTheoryAnswer">Show Model Answer</button>
+    </form>
+    {% endif %}
+  </div>
+
+{% elif state == 'result' %}
+  <!-- ========== RESULTS ========== -->
+  <div class="result-hero">
+    <div class="result-circle">
+      <svg viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#e7e5e4" stroke-width="8"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="{% if pct >= 50 %}#166534{% else %}#c2410c{% endif %}" stroke-width="8" stroke-dasharray="327" stroke-dashoffset="{{ stroke_offset }}" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="result-score">{{ session.correct_count }}<span>/{{ session.total }}</span></div>
+    </div>
+    <h2>{% if pct >= 50 %}Great work!{% else %}Keep practising!{% endif %}</h2>
+    <p>{{ session.correct_count }} correct out of {{ session.total }} — {{ pct }}%</p>
+    <a href="{% url 'practice_home' %}" class="ps-btn">Start New Practice</a>
+  </div>
+
+  <div class="result-answers">
+    <h3><i class="bi bi-list-ul me-1"></i> Answer Breakdown</h3>
+    {% for a in session.answers_json %}
+    <div class="ra-item {% if a.is_correct %}ra-correct{% else %}ra-wrong{% endif %}">
+      <div class="ra-status"><i class="bi {% if a.is_correct %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}"></i></div>
+      <div class="ra-body">
+        <span class="ra-type ra-t-{{ a.type }}">{{ a.type }}</span>
+        <p class="ra-question">{{ a.question }}</p>
+        {% if a.type == 'mcq' %}
+        <div class="ra-answer">Your answer: <strong class="{% if a.is_correct %}text-success{% else %}text-danger{% endif %}">{{ a.student_answer|default:'(no answer)' }}</strong></div>
+        {% if not a.is_correct %}
+        <div class="ra-correct">Correct: <strong>{{ a.correct_answer }}</strong></div>
+        {% endif %}
+        {% else %}
+        <div class="ra-correct">Model answer: <strong>{{ a.correct_answer|truncatechars:150 }}</strong></div>
+        {% if a.type == 'theory' and a.student_answer %}
+        <div class="ra-your">You wrote: {{ a.student_answer|truncatechars:100 }}</div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+</div>
+
+<style>
+.practice-wrap { max-width:720px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+/* Selector */
+.ps-hero { text-align:center; padding:2rem 0; }
+.ps-icon { width:56px;height:56px;border-radius:14px;background:#e8f0fe;color:#1e3a5f;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem; }
+.ps-hero h1 { font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:800;color:#1c1917;margin-bottom:0.4rem; }
+.ps-hero p { color:#78716c;font-size:0.9rem; }
+.ps-resume { text-align:center;padding:0.75rem;background:#fef9c3;border-radius:8px;margin-bottom:1.5rem;font-size:0.85rem;color:#854d0e; }
+.ps-resume-link { font-weight:700;color:#854d0e; }
+.ps-form { max-width:420px;margin:0 auto; }
+.ps-field { margin-bottom:1.25rem; }
+.ps-field label { display:block;font-size:0.85rem;font-weight:600;color:#1c1917;margin-bottom:0.4rem; }
+.ps-select { width:100%;padding:0.7rem 0.75rem;border:1.5px solid #d6d3d1;border-radius:10px;font-size:0.9rem;color:#1c1917;background:#fff;outline:none; }
+.ps-select:focus { border-color:#1e3a5f; }
+.ps-start-btn { width:100%;padding:0.8rem;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem; }
+.ps-start-btn:hover { background:#162d4a; }
+
+/* Type toggles */
+.ps-type-toggles { display:flex;gap:0.5rem; }
+.ps-type-opt { flex:1;display:flex; }
+.ps-type-opt input { display:none; }
+.ps-type-label {
+  flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;
+  padding:0.55rem 0.5rem;border:1.5px solid #d6d3d1;border-radius:10px;
+  font-size:0.8rem;font-weight:500;color:#78716c;cursor:pointer;
+  transition:all 0.15s;text-align:center;
+}
+.ps-type-label:hover { border-color:#1e3a5f;color:#1e3a5f; }
+.ps-type-opt input:checked + .ps-type-label {
+  border-color:#1e3a5f;background:#edf2f9;color:#1e3a5f;font-weight:600;
+}
+
+/* Quiz bar */
+.quiz-bar { display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem; }
+.quiz-progress { flex:1;height:6px;background:#e7e5e4;border-radius:3px;overflow:hidden; }
+.quiz-progress-fill { height:100%;background:#1e3a5f;border-radius:3px;transition:width 0.3s; }
+.quiz-counter { font-size:0.82rem;font-weight:600;color:#78716c;white-space:nowrap; }
+
+/* Question card */
+.quiz-card { background:#fff;border:1.5px solid #e7e5e4;border-radius:14px;padding:1.5rem; }
+.qc-type { display:inline-flex;align-items:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;padding:0.2rem 0.6rem;border-radius:999px;margin-bottom:0.75rem; }
+.qc-mcq { background:#e8f0fe;color:#1e3a5f; }
+.qc-flash { background:#fef3e2;color:#c2410c; }
+.qc-theory { background:#f3e8ff;color:#6b21a8; }
+.qc-question { font-size:1.05rem;font-weight:600;color:#1c1917;line-height:1.6;margin-bottom:1.25rem; }
+
+/* MCQ options */
+.qc-options { display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.25rem; }
+.qc-option { display:flex;align-items:center;gap:0.6rem;padding:0.7rem 1rem;border:1.5px solid #d6d3d1;border-radius:10px;cursor:pointer;font-size:0.9rem;color:#57534e;transition:border-color 0.15s; }
+.qc-option:hover { border-color:#1e3a5f; }
+.qc-option:has(input:checked) { border-color:#1e3a5f;background:#edf2f9;color:#1e3a5f; }
+.qc-option input { accent-color:#1e3a5f; }
+
+/* Flashcard */
+.flash-area { border:2px dashed #d6d3d1;border-radius:12px;min-height:200px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color 0.15s; }
+.flash-area:hover { border-color:#1e3a5f; }
+.flash-front { text-align:center;color:#a8a29e;padding:2rem; }
+.flash-front i { font-size:2rem;display:block;margin-bottom:0.5rem; }
+.flash-front p { font-size:0.9rem; }
+.flash-back { text-align:left;padding:1.5rem;width:100%; }
+.flash-answer { background:#fafaf9;border-radius:8px;padding:1rem;font-size:0.95rem;color:#1c1917;line-height:1.6;margin-bottom:1rem; }
+.flash-self { display:flex;gap:0.5rem; }
+
+/* Theory */
+.qc-textarea { width:100%;padding:0.7rem 0.85rem;border:1.5px solid #d6d3d1;border-radius:10px;font-size:0.9rem;color:#1c1917;resize:vertical;outline:none;font-family:inherit; }
+.qc-textarea:focus { border-color:#1e3a5f; }
+.theory-model { background:#fafaf9;border-radius:8px;padding:1rem;margin:0.75rem 0; }
+.theory-model strong { display:block;font-size:0.8rem;color:#1e3a5f;margin-bottom:0.4rem; }
+.theory-model p { font-size:0.88rem;color:#57534e;line-height:1.6;margin:0; }
+
+/* Buttons */
+.ps-btn { display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.65rem 1.5rem;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:0.88rem;font-weight:600;cursor:pointer;text-decoration:none;margin-top:0.75rem; }
+.ps-btn:hover { background:#162d4a; }
+.ps-btn-green { background:#166534; }
+.ps-btn-green:hover { background:#14532d; }
+.ps-btn-amber { background:#a16207; }
+.ps-btn-amber:hover { background:#854d0e; }
+.ps-btn-outline { background:transparent;color:#1e3a5f;border:1.5px solid #d6d3d1; }
+.ps-btn-outline:hover { border-color:#1e3a5f;background:#f5f5f4; }
+
+/* Results */
+.result-hero { text-align:center;padding:2rem 0; }
+.result-circle { width:130px;height:130px;position:relative;margin:0 auto 1rem; }
+.result-circle svg { width:100%;height:100%; }
+.result-score { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;color:#1c1917;gap:0.15rem; }
+.result-score span { font-size:1rem;font-weight:500;color:#78716c; }
+.result-hero h2 { font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:700;color:#1c1917;margin-bottom:0.3rem; }
+.result-hero p { color:#78716c;font-size:0.9rem;margin-bottom:1rem; }
+
+/* Answer breakdown */
+.result-answers { margin-top:2rem; }
+.result-answers h3 { font-size:1.05rem;font-weight:700;color:#1c1917;margin-bottom:1rem; }
+.ra-item { display:flex;gap:0.75rem;padding:0.85rem 1rem;border-radius:10px;margin-bottom:0.5rem; }
+.ra-correct { background:#f0fdf4;border:1px solid #dcfce7; }
+.ra-wrong { background:#fef2f2;border:1px solid #fee2e2; }
+.ra-status { font-size:1.1rem;flex-shrink:0; }
+.ra-correct .ra-status { color:#166534; }
+.ra-wrong .ra-status { color:#991b1b; }
+.ra-body { min-width:0; }
+.ra-type { display:inline-block;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;padding:0.1rem 0.4rem;border-radius:999px;margin-bottom:0.3rem; }
+.ra-t-mcq { background:#e8f0fe;color:#1e3a5f; }
+.ra-t-flashcard { background:#fef3e2;color:#c2410c; }
+.ra-t-theory { background:#f3e8ff;color:#6b21a8; }
+.ra-question { font-size:0.85rem;font-weight:600;color:#1c1917;margin-bottom:0.3rem;line-height:1.5; }
+.ra-answer, .ra-correct, .ra-your { font-size:0.78rem;color:#57534e;margin-bottom:0.1rem; }
+
+@media(max-width:600px){
+  .ps-hero h1{font-size:1.4rem}
+  .qc-question{font-size:0.95rem}
+}
+</style>
+
+{% if state == 'quiz' %}
+<script>
+{% if question.type == 'flashcard' %}
+document.getElementById('flashFront').addEventListener('click',function(){
+  document.getElementById('flashFront').style.display='none';
+  document.getElementById('flashBack').style.display='block';
+});
+{% elif question.type == 'theory' %}
+document.getElementById('showTheoryAnswer').addEventListener('click',function(){
+  document.getElementById('theoryHint').style.display='block';
+  this.style.display='none';
+});
+{% endif %}
+</script>
+{% endif %}
+
+{% endblock %}

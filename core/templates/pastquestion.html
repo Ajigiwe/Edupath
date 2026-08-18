@@ -171,7 +171,7 @@
                                             
                                             <!-- Options -->
                                             <div class="options-group">
-                                                {% for option in q.mcqoption_set.all %}
+                                                {% for option in q.options.all %}
                                                 <div class="form-check mb-2">
                                                     <input class="form-check-input mcq-option" type="radio" 
                                                         name="q{{ q.id }}" id="option{{ option.id }}" value="{{ option.id }}">
@@ -198,7 +198,11 @@
                                         <h6 class="fw-bold text-success mb-2">
                                             <i class="bi bi-check-circle me-2"></i>Correct Answer:
                                         </h6>
-                                        <p class="mb-0 text-muted">{{ q.correct_answer }}</p>
+                                        <p class="mb-0 text-muted">
+                                            {% for opt in q.options.all %}
+                                            {% if opt.is_correct %}{{ opt.text }}{% endif %}
+                                            {% endfor %}
+                                        </p>
                                     </div>
                                 </div>
                             </div>

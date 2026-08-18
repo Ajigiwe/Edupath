@@ -1,0 +1,417 @@
+{
+  "questions": [
+    {
+      "type": "theory",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Define a computer and list its four basic functions.",
+      "answer": "A computer is an electronic device that accepts data (input), processes it according to stored instructions, produces information (output), and stores the results for future use. The four basic functions are: Input, Processing, Output, and Storage."
+    },
+    {
+      "type": "theory",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Differentiate between system software and application software, giving two examples of each.",
+      "answer": "System software manages and controls computer hardware so that application software can perform tasks. Examples: Operating System (Windows, Linux), Device Drivers. Application software performs specific tasks for the user. Examples: Microsoft Word (word processing), Google Chrome (web browsing)."
+    },
+    {
+      "type": "mcq",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What does CPU stand for?",
+      "options": [
+        {"text": "Central Processing Unit", "correct": true},
+        {"text": "Central Program Utility", "correct": false},
+        {"text": "Computer Personal Unit", "correct": false},
+        {"text": "Core Processing Utility", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Which of the following is an input device?",
+      "options": [
+        {"text": "Monitor", "correct": false},
+        {"text": "Printer", "correct": false},
+        {"text": "Keyboard", "correct": true},
+        {"text": "Speaker", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "How many bits are in one byte?",
+      "options": [
+        {"text": "4 bits", "correct": false},
+        {"text": "8 bits", "correct": true},
+        {"text": "16 bits", "correct": false},
+        {"text": "32 bits", "correct": false}
+      ]
+    },
+    {
+      "type": "theory",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Explain the difference between RAM and ROM.",
+      "answer": "RAM (Random Access Memory) is volatile memory that temporarily stores data and programs currently in use. Its contents are lost when power is turned off. ROM (Read Only Memory) is non-volatile memory that permanently stores essential instructions (like BIOS/firmware). Its contents remain even without power. RAM is read-write while ROM is read-only during normal operation."
+    },
+    {
+      "type": "mcq",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Which device is used to connect a computer to the Internet?",
+      "options": [
+        {"text": "Scanner", "correct": false},
+        {"text": "Modem", "correct": true},
+        {"text": "Projector", "correct": false},
+        {"text": "Plotter", "correct": false}
+      ]
+    },
+    {
+      "type": "theory",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "List and explain the five generations of computers.",
+      "answer": "First Generation (1940-1956): Used vacuum tubes, very large, consumed massive power (e.g., ENIAC). Second Generation (1956-1963): Used transistors, smaller and more reliable. Third Generation (1964-1971): Used integrated circuits (ICs), introduced keyboards and monitors. Fourth Generation (1971-present): Used microprocessors, led to personal computers. Fifth Generation (present-future): Artificial intelligence, quantum computing, and natural language processing."
+    },
+    {
+      "type": "mcq",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the function of an operating system?",
+      "options": [
+        {"text": "To type documents", "correct": false},
+        {"text": "To browse the Internet", "correct": false},
+        {"text": "To manage hardware and software resources", "correct": true},
+        {"text": "To design graphics", "correct": false}
+      ]
+    },
+
+    {
+      "type": "theory",
+      "course": "Programming with C",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Explain the difference between a compiler and an interpreter.",
+      "answer": "A compiler translates the entire source code into machine code at once, producing an executable file. Errors are reported after the entire compilation. An interpreter translates and executes source code line by line without producing a separate executable. It stops at the first error encountered. Compilers generally produce faster-running programs while interpreters are better for debugging and development."
+    },
+    {
+      "type": "mcq",
+      "course": "Programming with C",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Which of the following is the correct syntax to print 'Hello World' in C?",
+      "options": [
+        {"text": "print('Hello World');", "correct": false},
+        {"text": "printf(\"Hello World\");", "correct": true},
+        {"text": "cout << 'Hello World';", "correct": false},
+        {"text": "System.out.println(\"Hello World\");", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "Programming with C",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What does the 'scanf' function do in C?",
+      "options": [
+        {"text": "Outputs data to the screen", "correct": false},
+        {"text": "Reads formatted input from the keyboard", "correct": true},
+        {"text": "Scans for viruses", "correct": false},
+        {"text": "Compiles the source code", "correct": false}
+      ]
+    },
+    {
+      "type": "theory",
+      "course": "Programming with C",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Define a variable and a constant in C programming. Give examples.",
+      "answer": "A variable is a named storage location whose value can change during program execution. Example: int age = 20; A constant is a named storage location whose value cannot change after it is defined. Example: const float PI = 3.14159; or #define PI 3.14159"
+    },
+
+    {
+      "type": "theory",
+      "course": "Calculus I",
+      "department": "Mathematics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "State and explain the Fundamental Theorem of Calculus.",
+      "answer": "The Fundamental Theorem of Calculus has two parts. Part 1: If f is continuous on [a, b] and F is an antiderivative of f, then the definite integral of f from a to b equals F(b) - F(a). Part 2: If f is continuous on [a, b], then the function g(x) = integral of f(t) dt from a to x is differentiable and g'(x) = f(x). This establishes the deep connection between differentiation and integration."
+    },
+    {
+      "type": "mcq",
+      "course": "Calculus I",
+      "department": "Mathematics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the derivative of f(x) = x³?",
+      "options": [
+        {"text": "3x²", "correct": true},
+        {"text": "x²", "correct": false},
+        {"text": "3x", "correct": false},
+        {"text": "x⁴/4", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "Calculus I",
+      "department": "Mathematics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Evaluate the limit: lim(x→0) sin(x)/x",
+      "options": [
+        {"text": "0", "correct": false},
+        {"text": "1", "correct": true},
+        {"text": "Infinity", "correct": false},
+        {"text": "Does not exist", "correct": false}
+      ]
+    },
+
+    {
+      "type": "theory",
+      "course": "Microeconomics",
+      "department": "Economics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Explain the law of demand and the factors that can cause a shift in the demand curve.",
+      "answer": "The law of demand states that, all else being equal, as the price of a good increases, the quantity demanded decreases, and vice versa. Factors shifting the demand curve include: changes in income (normal vs inferior goods), changes in tastes/preferences, changes in the price of related goods (substitutes and complements), changes in population, expectations of future prices, and changes in the number of buyers."
+    },
+    {
+      "type": "mcq",
+      "course": "Microeconomics",
+      "department": "Economics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the basic economic problem?",
+      "options": [
+        {"text": "Inflation", "correct": false},
+        {"text": "Unemployment", "correct": false},
+        {"text": "Scarcity", "correct": true},
+        {"text": "Taxation", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "Microeconomics",
+      "department": "Economics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "In a perfectly competitive market, what happens in the long run?",
+      "options": [
+        {"text": "Firms earn supernormal profits", "correct": false},
+        {"text": "Firms earn only normal profits", "correct": true},
+        {"text": "Firms exit the market entirely", "correct": false},
+        {"text": "Prices continuously increase", "correct": false}
+      ]
+    },
+
+    {
+      "type": "theory",
+      "course": "English Composition",
+      "department": "English",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Describe the four main types of essays and their purposes.",
+      "answer": "1. Narrative Essay: Tells a story and shares a personal experience. Purpose: to entertain and engage readers through storytelling. 2. Descriptive Essay: Describes a person, place, thing, or event in vivid detail using sensory language. Purpose: to paint a picture in the reader's mind. 3. Expository Essay: Explains, informs, or clarifies a topic using facts and evidence without personal opinion. Purpose: to educate and inform. 4. Argumentative/Persuasive Essay: Takes a position on a topic and argues for it using logic, evidence, and reasoning. Purpose: to convince the reader to agree with a viewpoint."
+    },
+    {
+      "type": "mcq",
+      "course": "English Composition",
+      "department": "English",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Which of the following sentences is grammatically correct?",
+      "options": [
+        {"text": "She don't like going to school.", "correct": false},
+        {"text": "She doesn't like going to school.", "correct": true},
+        {"text": "She not like going to school.", "correct": false},
+        {"text": "She isn't liking go to school.", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "English Composition",
+      "department": "English",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the main purpose of a topic sentence in a paragraph?",
+      "options": [
+        {"text": "To conclude the paragraph", "correct": false},
+        {"text": "To provide supporting details", "correct": false},
+        {"text": "To introduce the main idea of the paragraph", "correct": true},
+        {"text": "To list references", "correct": false}
+      ]
+    },
+
+    {
+      "type": "theory",
+      "course": "African Studies",
+      "department": "Arts and Social Sciences",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Discuss the impact of colonialism on the educational systems of West African countries.",
+      "answer": "Colonialism profoundly reshaped West African education by: (1) Replacing indigenous systems of education (traditional apprenticeship, oral tradition) with Western-style formal schooling. (2) Introducing European languages (English, French) as the medium of instruction, often at the expense of local languages. (3) Creating an education system designed to produce clerks and interpreters for colonial administration rather than critical thinkers. (4) Establishing missionary schools that linked education to religious conversion. (5) Creating lasting structural inequalities between elite urban-educated Africans and rural populations. Post-independence, many West African nations have worked to decolonise their curricula and reincorporate indigenous knowledge."
+    },
+    {
+      "type": "mcq",
+      "course": "African Studies",
+      "department": "Arts and Social Sciences",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "In which year did Ghana gain independence?",
+      "options": [
+        {"text": "1957", "correct": true},
+        {"text": "1960", "correct": false},
+        {"text": "1952", "correct": false},
+        {"text": "1963", "correct": false}
+      ]
+    },
+    {
+      "type": "mcq",
+      "course": "African Studies",
+      "department": "Arts and Social Sciences",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Who was Ghana's first president?",
+      "options": [
+        {"text": "J.B. Danquah", "correct": false},
+        {"text": "Kwame Nkrumah", "correct": true},
+        {"text": "Kofi Busia", "correct": false},
+        {"text": "Jerry Rawlings", "correct": false}
+      ]
+    },
+    {
+      "type": "flashcard",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the binary representation of the decimal number 10?",
+      "answer": "1010"
+    },
+    {
+      "type": "flashcard",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What does HTTP stand for?",
+      "answer": "HyperText Transfer Protocol"
+    },
+    {
+      "type": "flashcard",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the primary function of RAM?",
+      "answer": "To temporarily store data and programs currently in use by the CPU"
+    },
+    {
+      "type": "flashcard",
+      "course": "Introduction to Computing",
+      "department": "Computer Science",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Name the three main types of computer networks by size.",
+      "answer": "LAN (Local Area Network), MAN (Metropolitan Area Network), WAN (Wide Area Network)"
+    },
+    {
+      "type": "flashcard",
+      "course": "Calculus I",
+      "department": "Mathematics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the derivative of a constant function?",
+      "answer": "Zero (0)"
+    },
+    {
+      "type": "flashcard",
+      "course": "Calculus I",
+      "department": "Mathematics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "State the power rule for differentiation.",
+      "answer": "If f(x) = x^n, then f'(x) = n * x^(n-1)"
+    },
+    {
+      "type": "flashcard",
+      "course": "Microeconomics",
+      "department": "Economics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is opportunity cost?",
+      "answer": "The value of the next best alternative foregone when making a choice"
+    },
+    {
+      "type": "flashcard",
+      "course": "Microeconomics",
+      "department": "Economics",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Define supply in economics.",
+      "answer": "The quantity of a good or service that producers are willing and able to offer for sale at various prices during a given period"
+    },
+    {
+      "type": "flashcard",
+      "course": "English Composition",
+      "department": "English",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is a thesis statement?",
+      "answer": "A sentence that states the main idea or argument of an essay, typically found at the end of the introduction"
+    },
+    {
+      "type": "flashcard",
+      "course": "English Composition",
+      "department": "English",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "Define a compound sentence.",
+      "answer": "A sentence that contains at least two independent clauses joined by a coordinating conjunction (and, but, or, so, yet, for, nor)"
+    },
+    {
+      "type": "flashcard",
+      "course": "African Studies",
+      "department": "Arts and Social Sciences",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "In which year did Ghana gain independence?",
+      "answer": "1957"
+    },
+    {
+      "type": "flashcard",
+      "course": "African Studies",
+      "department": "Arts and Social Sciences",
+      "level": "Degree",
+      "school_level": 100,
+      "question": "What is the capital city of Ghana?",
+      "answer": "Accra"
+    }
+  ]
+}

@@ -48,6 +48,7 @@
       <div class="nav-head"><i class="bi bi-pencil"></i> Content</div>
       <a href="{% url 'add_theory_page' %}" class="nav-item {% if request.resolver_match.url_name == 'add_theory_page' %}active{% endif %}"><i class="bi bi-pencil-square"></i><span>Add Theory</span></a>
       <a href="{% url 'add_mcq_page' %}" class="nav-item {% if request.resolver_match.url_name == 'add_mcq_page' %}active{% endif %}"><i class="bi bi-check-square-fill"></i><span>Add MCQ</span></a>
+      <a href="{% url 'upload_questions_page' %}" class="nav-item {% if request.resolver_match.url_name == 'upload_questions_page' %}active{% endif %}"><i class="bi bi-cloud-upload-fill"></i><span>Upload Questions</span></a>
     </div>
 
     <div class="nav-divider"></div>

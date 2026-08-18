@@ -1,12 +1,14 @@
 # core/urls.py
 from django.urls import path
-from core.views.home_view import findmypath, alreadyknow, careeroutcome, stream_subjects_api
+from core.views.home_view import findmypath, alreadyknow, careeroutcome, stream_subjects_api, page_view
 from core.views.auth_view import login_view, logout_view, signup_view
 from core.views.institutions_list_view import institutions_list
 
 from core.views.pastquestion_view import past_questions
 from core.views.pastquestion_view import create_theory, add_theory_page
 from core.views.pastquestion_view import create_mcq, add_mcq_page
+from core.views.pastquestion_view import upload_questions_page, sample_questions_json
+from core.views.practice_view import practice_home, practice_start, practice_quiz, practice_result
 # from core.views.pastquestion_view import pastquestion
 from core.views.department_view import *
 from core.views.course_view import *
@@ -20,7 +22,7 @@ from core.views.program_details_view import *
 from core.views.interest_view import *
 from core.views.profile_view import profile_view, update_profile, change_password
 from core.views.subscription_view import plans_view, my_subscription, subscribe, paystack_callback
-from core.views.settings_view import site_settings_view
+from core.views.settings_view import site_settings_view, download_backup, restore_backup, clear_data
 from core.views.admin_dashboard_view import admin_dashboard
 from core.views.plan_view import plan_dashboard, create_plan, update_plan, delete_plan
 from core.views.user_view import user_dashboard, update_user, manage_subscription
@@ -38,6 +40,10 @@ urlpatterns = [
 
     path('institutions_list/', institutions_list, name='institutions'),
     path('past-questions/<uuid:id>/', past_questions, name='past_questions'),
+    path('practice/', practice_home, name='practice_home'),
+    path('practice/start/', practice_start, name='practice_start'),
+    path('practice/quiz/<uuid:session_id>/', practice_quiz, name='practice_quiz'),
+    path('practice/result/<uuid:session_id>/', practice_result, name='practice_result'),
     # ADD
     #path('add-theory/', create_theory, name='create_theory'),
     #path('add-mcq/', create_mcq, name='create_mcq'),
@@ -52,6 +58,10 @@ urlpatterns = [
     # 👉 FORM SUBMIT
     path('add-theory/', create_theory, name='create_theory'),
     path('add-mcq/', create_mcq, name='create_mcq'),
+
+    # 👉 BULK UPLOAD
+    path('upload-questions/', upload_questions_page, name='upload_questions_page'),
+    path('sample-questions.json', sample_questions_json, name='sample_questions_json'),
 
 
     path('departments/', department_dashboard, name='department_dashboard'),
@@ -143,4 +153,15 @@ urlpatterns = [
 
     # ================= Admin Settings =================
     path('settings/', site_settings_view, name='site_settings'),
+    path('settings/backup/', download_backup, name='download_backup'),
+    path('settings/restore/', restore_backup, name='restore_backup'),
+    path('settings/clear/', clear_data, name='clear_data'),
+
+    # ================= Static Pages =================
+    path('about/', page_view, {'slug': 'about'}, name='about'),
+    path('contact/', page_view, {'slug': 'contact'}, name='contact'),
+    path('how-it-works/', page_view, {'slug': 'how-it-works'}, name='how_it_works'),
+    path('privacy/', page_view, {'slug': 'privacy'}, name='privacy'),
+    path('faq/', page_view, {'slug': 'faq'}, name='faq'),
+    path('terms/', page_view, {'slug': 'terms'}, name='terms'),
 ]

@@ -1,0 +1,65 @@
+{% extends 'base2.html' %}
+{% block content %}
+
+<div class="page-hero">
+  <div class="ph-icon"><i class="bi bi-file-text-fill"></i></div>
+  <h1>Terms of Service</h1>
+  <p>Last updated July 2026</p>
+</div>
+
+<div class="page-content">
+  <div class="pol-section">
+    <h3><i class="bi bi-check-circle"></i> Acceptance</h3>
+    <p>By using EduPath Ghana, you agree to these terms. If you do not agree, please discontinue use of the service.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-person-badge"></i> Account Responsibilities</h3>
+    <p>You are responsible for maintaining the confidentiality of your login credentials and for all activities under your account. You must provide accurate information during registration — inaccurate WASSCE data will produce misleading recommendations.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-credit-card"></i> Subscriptions &amp; Payments</h3>
+    <p>Paid plans are billed monthly or yearly via Paystack. Cancellations take effect at the end of the current billing period. No refunds are offered for partial months unless required by Ghanaian consumer protection law. Free plan features may change with notice.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-exclamation-triangle"></i> Limitation of Liability</h3>
+    <p>EduPath provides programme recommendations based on available admission data. We do not guarantee university admission, and cutoff data may change. Always verify admission requirements with the institution directly before finalising your application.</p>
+  </div>
+
+  <div class="pol-section">
+    <h3><i class="bi bi-c-circle"></i> Intellectual Property</h3>
+    <p>All content on EduPath Ghana — including the recommendation engine, design, text, and database — is the intellectual property of EduPath Ghana. Unauthorised reproduction or scraping is prohibited.</p>
+  </div>
+</div>
+
+<style>
+.page-hero {
+  text-align:center;padding:3.5rem 1.5rem 2rem;
+  background:linear-gradient(to bottom,#fafaf9,#fff);
+}
+.ph-icon {
+  width:60px;height:60px;border-radius:16px;
+  background:#e8f0fe;color:#1e3a5f;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;margin:0 auto 1rem;
+}
+.page-hero h1 { font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:#1c1917;margin-bottom:0.4rem; }
+.page-hero p { color:#78716c;font-size:0.88rem;margin:0; }
+.page-content { max-width:720px;margin:0 auto;padding:0 1.5rem 4rem; }
+
+.pol-section {
+  background:#fff;border:1.5px solid #e7e5e4;border-radius:10px;
+  padding:1.15rem 1.35rem;margin-bottom:0.75rem;
+}
+.pol-section h3 {
+  display:flex;align-items:center;gap:0.45rem;
+  font-size:0.95rem;font-weight:700;color:#1c1917;margin-bottom:0.4rem;
+}
+.pol-section h3 i { color:#1e3a5f;font-size:0.85rem; }
+.pol-section p { color:#57534e;font-size:0.85rem;line-height:1.7;margin:0; }
+
+@media(max-width:600px){ .page-hero h1{font-size:1.5rem} }
+</style>
+{% endblock %}
