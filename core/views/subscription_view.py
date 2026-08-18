@@ -24,10 +24,11 @@ def my_subscription(request):
     payments = Payment.objects.filter(user=request.user)[:10]
     plans = SubscriptionPlan.objects.filter(is_active=True)
 
-    # A paid subscription locks plan switching until it expires.
-    locked = False
+    # While a paid subscription is active, users may upgrade or renew but not
+    # downgrade to a cheaper plan.
+    downgrade_locked = False
     if sub and sub.plan and sub.plan.price_monthly > 0:
-        locked = (
+        downgrade_locked = (
             sub.status in ('ACTIVE', 'TRIAL')
             and (not sub.end_date or sub.end_date > timezone.now())
         )
@@ -36,7 +37,7 @@ def my_subscription(request):
         'subscription': sub,
         'payments': payments,
         'plans': plans,
-        'locked': locked,
+        'downgrade_locked': downgrade_locked,
     })
 
 
@@ -44,7 +45,8 @@ def my_subscription(request):
 def subscribe(request, plan_slug):
     plan = get_object_or_404(SubscriptionPlan, slug=plan_slug, is_active=True)
 
-    # Lock plan switching while a paid subscription is still active.
+    # Block downgrading to a cheaper plan while a paid subscription is active.
+    # Upgrades to higher-priced plans and renewals of the same plan are allowed.
     try:
         current_sub = request.user.subscription
     except UserSubscription.DoesNotExist:
@@ -55,12 +57,13 @@ def subscribe(request, plan_slug):
             current_sub.status in ('ACTIVE', 'TRIAL')
             and (not current_sub.end_date or current_sub.end_date > timezone.now())
         )
-        if is_currently_active and current_sub.plan_id != plan.id:
+        is_downgrade = current_sub.plan.price_monthly > plan.price_monthly
+        if is_currently_active and is_downgrade and current_sub.plan_id != plan.id:
             end_display = current_sub.end_date.strftime('%B %d, %Y') if current_sub.end_date else 'the end of your period'
             messages.warning(
                 request,
                 f'Your {current_sub.plan.name} subscription is active until {end_display}. '
-                'You can switch plans after it expires.'
+                'You can downgrade to a cheaper plan after it expires.'
             )
             return redirect('my_subscription')
 

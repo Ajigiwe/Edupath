@@ -42,7 +42,12 @@
             <span class="plan-badge-tag">{{ subscription.plan.badge_label }}</span>
             {% endif %}
           </div>
-          <a href="{% url 'plans' %}" class="plan-change-btn">{% if locked %}Locked{% else %}Change{% endif %}</a>
+          <div class="d-flex align-items-center gap-2">
+            {% if downgrade_locked and subscription.plan.price_monthly > 0 %}
+            <a href="{% url 'subscribe' subscription.plan.slug %}" class="plan-change-btn" style="color:var(--primary);border-color:var(--primary)">Renew</a>
+            {% endif %}
+            <a href="{% url 'plans' %}" class="plan-change-btn">Change</a>
+          </div>
         </div>
         <div class="plan-card-name">{{ subscription.plan.name }}</div>
         <div class="plan-card-price">
@@ -74,12 +79,12 @@
       </div>
     </div>
 
-    {% if locked %}
+    {% if downgrade_locked %}
     <div class="lock-notice">
       <i class="bi bi-lock-fill"></i>
       <div>
-        <strong>Plan switching is locked</strong>
-        <span>Your {{ subscription.plan.name }} subscription runs until {{ subscription.end_date|date:"M j, Y" }}. You can switch to another plan after it expires.</span>
+        <strong>Downgrade locked until {{ subscription.end_date|date:"M j, Y" }}</strong>
+        <span>Your {{ subscription.plan.name }} subscription is active. You can upgrade or renew now, but switching to a cheaper plan is only allowed after it expires.</span>
       </div>
     </div>
     {% endif %}
@@ -152,10 +157,12 @@
           <span class="switch-name">{{ plan.name }}</span>
           <span class="switch-price">GHS {{ plan.price_monthly }}/mo</span>
         </div>
-        {% if locked %}
+        {% if downgrade_locked and plan.price_monthly < subscription.plan.price_monthly %}
         <span class="switch-btn" style="cursor:not-allowed;opacity:0.55">Locked</span>
         {% else %}
-        <a href="{% url 'subscribe' plan.slug %}" class="switch-btn">Switch</a>
+        <a href="{% url 'subscribe' plan.slug %}" class="switch-btn">
+          {% if plan.price_monthly > subscription.plan.price_monthly %}Upgrade{% else %}Switch{% endif %}
+        </a>
         {% endif %}
       </div>
       {% endif %}
