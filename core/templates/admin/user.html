@@ -30,7 +30,10 @@
       </div>
     </div>
   </td>
-  <td class="cell-muted" style="font-size:0.82rem">{{ u.email|default:'—' }}</td>
+  <td class="cell-muted" style="font-size:0.82rem">
+    {% if u.profile.phone %}<span><i class="bi bi-telephone me-1"></i>{{ u.profile.phone }}</span>
+    {% else %}{{ u.email|default:'—' }}{% endif %}
+  </td>
   <td>
     {% with sub=u.subscription %}
     {% if sub and sub.plan %}

@@ -1,6 +1,32 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.hashers import make_password, check_password
+
+
+class UserProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField(max_length=20, unique=True, help_text="Primary login identifier")
+    master_pin_hash = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def set_master_pin(self, raw_pin):
+        self.master_pin_hash = make_password(str(raw_pin))
+        self.save(update_fields=['master_pin_hash', 'updated_at'])
+
+    def verify_master_pin(self, raw_pin):
+        if not self.master_pin_hash:
+            return False
+        return check_password(str(raw_pin), self.master_pin_hash)
+
+    def has_master_pin(self):
+        return bool(self.master_pin_hash)
+
+    def __str__(self):
+        return f"{self.user.username} — {self.phone}"
+
 
 class Ownership(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -484,3 +510,21 @@ class PracticeSession(models.Model):
 
     def __str__(self):
         return f"{self.user.username} — {self.course.coursename if self.course else 'Any'} ({self.started_at:%Y-%m-%d %H:%M})"
+
+
+class TermReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='term_reports')
+    stream = models.ForeignKey(SHSStream, on_delete=models.SET_NULL, null=True, blank=True)
+    term_number = models.PositiveIntegerField(default=1)
+    grades = models.JSONField(default=dict, help_text="Map of {subject_name: WAEC grade value 1-9}")
+    aggregate = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-term_number']
+        unique_together = ['user', 'term_number']
+
+    def __str__(self):
+        return f"{self.user.username} — Term {self.term_number} ({self.aggregate if self.aggregate is not None else '—'})"

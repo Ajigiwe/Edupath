@@ -1,0 +1,339 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block title %}Termly Progress Analysis — EduPath Ghana{% endblock %}
+
+{% block content %}
+<div class="ta-wrap">
+
+{% if mode == 'upload' %}
+  <!-- ========== UPLOAD TERM RESULTS ========== -->
+  <div class="ta-hero">
+    <div class="ta-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <h1>Upload Term Results</h1>
+    <p>Enter your grades for this term and get a full progress analysis against your chosen path.</p>
+  </div>
+
+  <form method="POST" class="ta-form" id="taForm">
+    {% csrf_token %}
+    <div class="ta-row">
+      <div class="ta-field">
+        <label><i class="bi bi-diagram-3 me-1"></i> SHS Stream</label>
+        <select name="stream" id="taStream" class="ta-select" required>
+          <option value="">— Select your stream —</option>
+          {% for s in streams %}
+          <option value="{{ s.slug }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ta-field ta-field-sm">
+        <label><i class="bi bi-123 me-1"></i> Term Number</label>
+        <input type="number" name="term_number" class="ta-input" value="{{ next_term }}" min="1" required>
+      </div>
+    </div>
+
+    <div class="ta-subjects" id="taSubjects">
+      <p class="ta-hint"><i class="bi bi-info-circle me-1"></i>Select a stream to load its subjects.</p>
+    </div>
+
+    <button type="submit" class="ta-submit"><i class="bi bi-magic me-1"></i> Analyze My Results</button>
+  </form>
+
+{% elif mode == 'result' %}
+  <!-- ========== RESULT ========== -->
+  <div class="ta-hero">
+    <div class="ta-icon"><i class="bi bi-clipboard-data"></i></div>
+    <h1>Term {{ report.term_number }} Analysis</h1>
+    <p>{{ report.stream.name|default:'No stream selected' }} &middot; {{ report.created_at|date:"M j, Y" }}</p>
+  </div>
+
+  {% if analysis.standing == 'STRONG' %}
+  <div class="ta-banner" style="background:#dcfce7;border-color:#86efac">
+    <i class="bi bi-emoji-laughing"></i>
+    <div><strong>Strong standing</strong> — {{ analysis.verdict }}</div>
+  </div>
+  {% elif analysis.standing == 'ON_TRACK' %}
+  <div class="ta-banner" style="background:#dbeafe;border-color:#93c5fd">
+    <i class="bi bi-emoji-smile"></i>
+    <div><strong>On track</strong> — {{ analysis.verdict }}</div>
+  </div>
+  {% elif analysis.standing == 'RISK' %}
+  <div class="ta-banner" style="background:#fef3c7;border-color:#fcd34d">
+    <i class="bi bi-exclamation-triangle"></i>
+    <div><strong>At risk</strong> — {{ analysis.verdict }}</div>
+  </div>
+  {% elif analysis.standing == 'REVIEW' %}
+  <div class="ta-banner" style="background:#fee2e2;border-color:#fca5a5">
+    <i class="bi bi-x-circle"></i>
+    <div><strong>Needs review</strong> — {{ analysis.verdict }}</div>
+  </div>
+  {% else %}
+  <div class="ta-banner" style="background:#f5f5f4;border-color:#d6d3d1">
+    <i class="bi bi-info-circle"></i>
+    <div><strong>Incomplete</strong> — {{ analysis.verdict }}</div>
+  </div>
+  {% endif %}
+
+  <div class="ta-grid">
+    <div class="ta-card">
+      <h3><i class="bi bi-mortarboard me-1"></i> Aggregate</h3>
+      <div class="ta-agg">{{ analysis.aggregate|default:'—' }}</div>
+      <p class="ta-card-sub">Best 3 core + best 3 electives (lower is better)</p>
+    </div>
+
+    <div class="ta-card">
+      <h3><i class="bi bi-graph-up me-1"></i> Likely Programmes</h3>
+      {% if analysis.likely %}
+      <ul class="ta-list">
+        {% for p in analysis.likely %}<li><i class="bi bi-check-circle-fill me-1"></i>{{ p.name }} <span class="ta-cutoff">cutoff ≤ {{ p.cutoff }}</span></li>{% endfor %}
+      </ul>
+      {% else %}<p class="ta-none">None in range — focus on improving your aggregate.</p>{% endif %}
+    </div>
+
+    <div class="ta-card">
+      <h3><i class="bi bi-x-circle me-1"></i> Not Viable Now</h3>
+      {% if analysis.not_viable %}
+      <ul class="ta-list">
+        {% for p in analysis.not_viable %}<li><i class="bi bi-x-lg me-1"></i>{{ p.name }}</li>{% endfor %}
+      </ul>
+      {% else %}<p class="ta-none">No hard blockers on your stream.</p>{% endif %}
+    </div>
+  </div>
+
+  <div class="ta-card">
+    <h3><i class="bi bi-book me-1"></i> Subject Performance</h3>
+    <table class="ta-table">
+      <thead><tr><th>Subject</th><th>Grade</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for s in analysis.subjects %}
+        <tr>
+          <td>{{ s.name }}</td>
+          <td><b>{{ s.grade_label }}</b></td>
+          <td>
+            {% if s.status == 'weak' %}<span class="ta-tag ta-tag-weak">Focus area</span>
+            {% elif s.status == 'strong' %}<span class="ta-tag ta-tag-strong">Strength</span>
+            {% else %}<span class="ta-tag ta-tag-ok">On track</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if comparison %}
+  <div class="ta-card">
+    <h3><i class="bi bi-arrow-repeat me-1"></i> Progress vs Term {{ report.term_number|add:"-1" }}</h3>
+    {% if comparison.trend == 'IMPROVING' %}
+    <div class="ta-banner" style="background:#dcfce7;border-color:#86efac"><i class="bi bi-arrow-up-circle"></i><div><strong>Improving</strong> — aggregate moved from {{ comparison.agg_prev }} to {{ comparison.agg_cur }}.</div></div>
+    {% elif comparison.trend == 'DECLINING' %}
+    <div class="ta-banner" style="background:#fee2e2;border-color:#fca5a5"><i class="bi bi-arrow-down-circle"></i><div><strong>Declining</strong> — aggregate moved from {{ comparison.agg_prev }} to {{ comparison.agg_cur }}.</div></div>
+    {% elif comparison.trend == 'STEADY' %}
+    <div class="ta-banner" style="background:#fef3c7;border-color:#fcd34d"><i class="bi bi-dash-circle"></i><div><strong>Steady</strong> — aggregate unchanged at {{ comparison.agg_cur }}.</div></div>
+    {% endif %}
+
+    {% if comparison.deltas %}
+    <table class="ta-table">
+      <thead><tr><th>Subject</th><th>Previous</th><th>Now</th><th>Change</th></tr></thead>
+      <tbody>
+        {% for d in comparison.deltas %}
+        <tr>
+          <td>{{ d.name }}</td>
+          <td>{{ d.prev_label }}</td>
+          <td><b>{{ d.cur_label }}</b></td>
+          <td>
+            {% if d.improved %}<span class="ta-delta ta-delta-up"><i class="bi bi-arrow-up-circle me-1"></i>+{{ d.delta }}</span>
+            {% elif d.declined %}<span class="ta-delta ta-delta-down"><i class="bi bi-arrow-down-circle me-1"></i>{{ d.delta }}</span>
+            {% else %}<span class="ta-delta">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="ta-actions">
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload Another Term</a>
+    <a href="{% url 'terminal_home' %}" class="ta-btn ta-btn-ghost"><i class="bi bi-clock-history me-1"></i> All Reports</a>
+  </div>
+
+{% else %}
+  <!-- ========== HOME / HISTORY ========== -->
+  <div class="ta-hero">
+    <div class="ta-icon"><i class="bi bi-graph-up-arrow"></i></div>
+    <h1>Termly Progress Analysis</h1>
+    <p>Upload your results each term and watch your path become clearer — continue on track, discover likely programmes, and fix weak areas early.</p>
+  </div>
+
+  {% if reports %}
+  <div class="ta-history">
+    {% for r in reports %}
+    <a href="{% url 'terminal_result' r.id %}" class="ta-hist-item">
+      <div class="ta-hist-icon"><i class="bi bi-clipboard-data"></i></div>
+      <div class="ta-hist-info">
+        <strong>Term {{ r.term_number }}</strong>
+        <span>{{ r.stream.name|default:'No stream' }} &middot; {{ r.created_at|date:"M j, Y" }}</span>
+      </div>
+      <div class="ta-hist-agg">Aggregate: <b>{{ r.aggregate|default:'—' }}</b></div>
+      <i class="bi bi-chevron-right ta-hist-arrow"></i>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="ta-actions">
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-plus-lg me-1"></i> Upload Term {{ next_term }}</a>
+  </div>
+  {% else %}
+  <div class="ta-empty">
+    <i class="bi bi-inbox"></i>
+    <p>No term reports yet.</p>
+    <a href="{% url 'terminal_upload' %}" class="ta-btn"><i class="bi bi-upload me-1"></i> Upload Your First Term</a>
+  </div>
+  {% endif %}
+{% endif %}
+
+</div>
+
+<script>
+(function(){
+  var streamSel = document.getElementById('taStream');
+  var subjectsBox = document.getElementById('taSubjects');
+  if(!streamSel || !subjectsBox) return;
+
+  var data = {{ stream_subjects_json|safe }};
+
+  function renderSubjects(slug){
+    var list = data[slug] || [];
+    if(!list.length){
+      subjectsBox.innerHTML = '<p class="ta-hint"><i class="bi bi-info-circle me-1"></i>No subjects configured for this stream.</p>';
+      return;
+    }
+    var html = '<div class="ta-sub-grid">';
+    list.forEach(function(sub){
+      html += '<div class="ta-sub-cell">' +
+        '<label class="ta-sub-label">' + sub.name + '</label>' +
+        '<select name="grade_' + sub.name + '" class="ta-select">' +
+        '<option value="">Grade</option>' +
+        '<option value="1">A1</option><option value="2">B2</option><option value="3">B3</option>' +
+        '<option value="4">C4</option><option value="5">C5</option><option value="6">C6</option>' +
+        '<option value="7">D7</option><option value="8">E8</option><option value="9">F9</option>' +
+        '</select></div>';
+    });
+    html += '</div>';
+    subjectsBox.innerHTML = html;
+  }
+
+  streamSel.addEventListener('change', function(){
+    renderSubjects(this.value);
+  });
+})();
+</script>
+
+<style>
+.ta-wrap { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+
+.ta-hero { text-align: center; margin-bottom: 1.75rem; }
+.ta-icon {
+  width: 56px; height: 56px; margin: 0 auto 0.75rem;
+  background: #1e3a5f; color: #fff; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+}
+.ta-hero h1 { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 800; color: #1c1917; margin-bottom: 0.35rem; }
+.ta-hero p { color: #78716c; font-size: 0.9rem; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+.ta-form { background: #fff; border: 1px solid #d6d3d1; border-radius: 12px; padding: 1.5rem; }
+.ta-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+.ta-field { margin-bottom: 1rem; }
+.ta-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #1c1917; margin-bottom: 0.3rem; }
+.ta-select, .ta-input {
+  width: 100%; padding: 0.55rem 0.75rem; font-size: 0.88rem;
+  border: 1.5px solid #d6d3d1; border-radius: 8px; color: #1c1917;
+  outline: none; transition: border-color 0.15s; background: #fff;
+}
+.ta-select:focus, .ta-input:focus { border-color: #1e3a5f; }
+
+.ta-subjects { margin: 1rem 0; }
+.ta-sub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+.ta-sub-cell { border: 1px solid #e7e5e4; border-radius: 8px; padding: 0.6rem; }
+.ta-sub-label { display: block; font-size: 0.78rem; font-weight: 600; color: #44403c; margin-bottom: 0.35rem; }
+.ta-hint { font-size: 0.82rem; color: #78716c; }
+
+.ta-submit {
+  width: 100%; padding: 0.75rem; background: #1e3a5f; color: #fff;
+  border: none; border-radius: 10px; font-size: 0.92rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center; font-family: inherit;
+}
+.ta-submit:hover { background: #152a45; transform: translateY(-1px); }
+
+.ta-banner {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  border: 1.5px solid; border-radius: 10px; padding: 0.85rem 1rem;
+  font-size: 0.88rem; margin-bottom: 1.25rem; line-height: 1.5;
+}
+.ta-banner i { font-size: 1.1rem; margin-top: 0.1rem; }
+
+.ta-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (min-width: 768px) { .ta-grid { grid-template-columns: 1fr 1fr; } .ta-card:first-child { grid-column: 1 / -1; } }
+
+.ta-card { background: #fff; border: 1px solid #d6d3d1; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+.ta-card h3 { font-size: 0.95rem; font-weight: 700; color: #1c1917; margin: 0 0 0.75rem; }
+
+.ta-agg { font-size: 2.2rem; font-weight: 800; color: #1e3a5f; }
+.ta-card-sub { font-size: 0.75rem; color: #a8a29e; margin: 0.25rem 0 0; }
+
+.ta-list { list-style: none; padding: 0; margin: 0; }
+.ta-list li { font-size: 0.85rem; color: #44403c; padding: 0.3rem 0; border-bottom: 1px solid #f5f5f4; }
+.ta-list li:last-child { border-bottom: none; }
+.ta-list li i { color: #16a34a; }
+.ta-cutoff { font-size: 0.72rem; color: #a8a29e; }
+.ta-none { font-size: 0.82rem; color: #78716c; }
+
+.ta-table { width: 100%; border-collapse: collapse; }
+.ta-table th { text-align: left; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #a8a29e; padding: 0.45rem 0.6rem; border-bottom: 1px solid #e7e5e4; }
+.ta-table td { font-size: 0.85rem; color: #1c1917; padding: 0.5rem 0.6rem; border-bottom: 1px solid #f5f5f4; }
+.ta-table tr:last-child td { border-bottom: none; }
+
+.ta-tag { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; }
+.ta-tag-weak { background: #fee2e2; color: #991b1b; }
+.ta-tag-strong { background: #dcfce7; color: #166534; }
+.ta-tag-ok { background: #f5f5f4; color: #44403c; }
+
+.ta-delta { font-weight: 700; font-size: 0.85rem; }
+.ta-delta-up { color: #16a34a; }
+.ta-delta-down { color: #dc2626; }
+
+.ta-actions { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap; }
+.ta-btn {
+  display: inline-flex; align-items: center; padding: 0.65rem 1.25rem;
+  background: #1e3a5f; color: #fff; border-radius: 10px;
+  font-size: 0.88rem; font-weight: 600; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.ta-btn:hover { background: #152a45; color: #fff; transform: translateY(-1px); }
+.ta-btn-ghost { background: #fff; color: #1e3a5f; border: 1.5px solid #d6d3d1; }
+.ta-btn-ghost:hover { background: #f5f5f4; color: #1e3a5f; }
+
+.ta-history { display: flex; flex-direction: column; gap: 0.6rem; }
+.ta-hist-item {
+  display: flex; align-items: center; gap: 0.9rem;
+  background: #fff; border: 1px solid #d6d3d1; border-radius: 10px;
+  padding: 0.9rem 1rem; text-decoration: none; color: #1c1917;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.ta-hist-item:hover { border-color: #1e3a5f; transform: translateY(-1px); }
+.ta-hist-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: #e8f0fe; color: #1e3a5f;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.ta-hist-info { flex: 1; display: flex; flex-direction: column; }
+.ta-hist-info strong { font-size: 0.9rem; }
+.ta-hist-info span { font-size: 0.75rem; color: #a8a29e; }
+.ta-hist-agg { font-size: 0.82rem; color: #78716c; }
+.ta-hist-arrow { color: #d6d3d1; }
+
+.ta-empty { text-align: center; padding: 3rem 1rem; background: #fff; border: 1px dashed #d6d3d1; border-radius: 12px; }
+.ta-empty i { font-size: 2.5rem; color: #d6d3d1; }
+.ta-empty p { color: #78716c; margin: 0.75rem 0 1.25rem; }
+</style>
+{% endblock %}

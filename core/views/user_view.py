@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from core.models import SubscriptionPlan, UserSubscription, Payment
+from core.models import SubscriptionPlan, UserSubscription, Payment, UserProfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,9 +12,9 @@ from datetime import datetime
 @login_required(login_url='login')
 def user_dashboard(request):
     search = request.GET.get('search') or None
-    user_list = User.objects.all().order_by('-date_joined')
+    user_list = User.objects.all().prefetch_related('profile').order_by('-date_joined')
     if search:
-        user_list = user_list.filter(username__icontains=search) | user_list.filter(email__icontains=search)
+        user_list = user_list.filter(username__icontains=search) | user_list.filter(email__icontains=search) | user_list.filter(profile__phone__icontains=search)
     paginator = Paginator(user_list.distinct(), 10)
     users = paginator.get_page(request.GET.get('page'))
     plans = SubscriptionPlan.objects.filter(is_active=True)

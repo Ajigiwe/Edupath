@@ -12,6 +12,7 @@
       <a class="nav-lk {% if request.resolver_match.url_name == 'alreadyknow' %}active{% endif %}" href="{% url 'alreadyknow' %}">Find Schools</a>
       <a class="nav-lk {% if request.resolver_match.url_name == 'careeroutcome' %}active{% endif %}" href="{% url 'careeroutcome' %}">Careers</a>
       <a class="nav-lk {% if request.resolver_match.url_name == 'practice_home' %}active{% endif %}" href="{% url 'practice_home' %}">Practice</a>
+      <a class="nav-lk {% if request.resolver_match.url_name == 'terminal_home' or request.resolver_match.url_name == 'terminal_upload' or request.resolver_match.url_name == 'terminal_result' %}active{% endif %}" href="{% url 'terminal_home' %}">Term Analysis</a>
     </div>
 
     <div class="nav-auth">
@@ -77,6 +78,7 @@
     <a class="dr-item {% if request.resolver_match.url_name == 'alreadyknow' %}active{% endif %}" href="{% url 'alreadyknow' %}"><i class="bi bi-search"></i> Find Schools</a>
     <a class="dr-item {% if request.resolver_match.url_name == 'careeroutcome' %}active{% endif %}" href="{% url 'careeroutcome' %}"><i class="bi bi-briefcase-fill"></i> Careers</a>
     <a class="dr-item {% if request.resolver_match.url_name == 'institutions' %}active{% endif %}" href="{% url 'practice_home' %}"><i class="bi bi-pencil-square"></i> Practice</a>
+    <a class="dr-item {% if request.resolver_match.url_name == 'terminal_home' or request.resolver_match.url_name == 'terminal_upload' or request.resolver_match.url_name == 'terminal_result' %}active{% endif %}" href="{% url 'terminal_home' %}"><i class="bi bi-graph-up-arrow"></i> Term Analysis</a>
 
     <div class="dr-divider"></div>
 

@@ -253,6 +253,26 @@ class MCQQuestionAdmin(admin.ModelAdmin):
     option_count.short_description = 'Options'
 
 
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['phone', 'user', 'has_master_pin', 'created_at']
+    search_fields = ['phone', 'user__username', 'user__email']
+    list_filter = ['created_at']
+    readonly_fields = ['master_pin_hash', 'created_at', 'updated_at']
+
+    def has_master_pin(self, obj):
+        return obj.has_master_pin()
+    has_master_pin.boolean = True
+    has_master_pin.short_description = 'PIN set'
+
+
+@admin.register(TermReport)
+class TermReportAdmin(admin.ModelAdmin):
+    list_display = ['user', 'term_number', 'stream', 'aggregate', 'created_at']
+    search_fields = ['user__username', 'user__profile__phone']
+    list_filter = ['stream', 'term_number']
+
+
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     fieldsets = (

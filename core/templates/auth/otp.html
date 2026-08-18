@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | EduPath Ghana</title>
+    <title>Reset Master PIN | EduPath Ghana</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -19,38 +19,34 @@
             <div class="auth-logo">
                 <i class="bi bi-mortarboard-fill"></i>
             </div>
-            <h2 class="auth-tagline">Find your path.</h2>
-            <p class="auth-desc">Discover university programmes tailored to your SHS background, interests, and academic performance.</p>
+            <h2 class="auth-tagline">Recover your access.</h2>
+            <p class="auth-desc">Verify your phone number and create a new master PIN to get back into your EduPath account.</p>
             <div class="auth-testimonial">
-                <div class="auth-avatar"><i class="bi bi-chat-quote-fill"></i></div>
-                <p class="auth-quote">"EduPath helped me find the perfect programme. I never knew so many options existed for my stream."</p>
-                <span class="auth-author">— Adwoa M., UG '26</span>
+                <div class="auth-avatar"><i class="bi bi-shield-lock"></i></div>
+                <p class="auth-quote">Your master PIN is the only password you need on EduPath — quick to enter, secure to store.</p>
             </div>
         </div>
     </div>
     <div class="auth-form-panel">
         <div class="auth-form-inner">
             <div class="auth-form-header">
-                <div class="auth-form-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <h3 class="auth-form-title">Welcome back</h3>
-                <p class="auth-form-sub">Sign in to continue</p>
+                <div class="auth-form-icon"><i class="bi bi-key-fill"></i></div>
+                <h3 class="auth-form-title">Reset master PIN</h3>
+                <p class="auth-form-sub">We'll verify your number first</p>
             </div>
 
             {% if messages %}
                 {% for message in messages %}
-                <div class="auth-alert"><i class="bi bi-exclamation-circle me-2"></i>{{ message }}</div>
+                <div class="auth-alert {% if 'error' in message.tags %}auth-alert-danger{% else %}auth-alert-success{% endif %}">
+                    <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+                </div>
                 {% endfor %}
             {% endif %}
 
-            <div class="auth-tabs">
-                <button type="button" class="auth-tab {% if mode == 'student' %}active{% endif %}" data-tab="student"><i class="bi bi-person me-1"></i>Student</button>
-                <button type="button" class="auth-tab {% if mode == 'staff' %}active{% endif %}" data-tab="staff"><i class="bi bi-shield-lock me-1"></i>Staff</button>
-            </div>
-
-            <!-- Student: phone + master PIN -->
-            <form method="POST" class="auth-form-pane {% if mode != 'student' %}d-none{% endif %}" data-pane="student">
+            {% if step == 'phone' %}
+            <form method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="mode" value="student">
+                <input type="hidden" name="step" value="phone">
                 <div class="auth-field">
                     <label class="auth-label">Phone number</label>
                     <div class="auth-input-wrap">
@@ -58,44 +54,59 @@
                         <input type="tel" name="phone" class="auth-input" placeholder="e.g. 0241234567" required>
                     </div>
                 </div>
-                <div class="auth-field">
-                    <label class="auth-label">Master PIN</label>
-                    <div class="auth-input-wrap">
-                        <i class="bi bi-lock auth-input-icon"></i>
-                        <input type="password" name="pin" class="auth-input" inputmode="numeric" placeholder="Enter your 4-6 digit PIN" required style="padding-right:2.6rem">
-                        <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
-                    </div>
-                </div>
-                <div class="auth-options">
-                    <a href="{% url 'request_otp' %}" class="auth-forgot">Forgot PIN?</a>
-                </div>
-                <button type="submit" class="auth-btn"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</button>
+                <button type="submit" class="auth-btn"><i class="bi bi-arrow-right me-2"></i>Send Code</button>
             </form>
-
-            <!-- Staff: username + password -->
-            <form method="POST" class="auth-form-pane {% if mode != 'staff' %}d-none{% endif %}" data-pane="staff">
+            {% elif step == 'otp' %}
+            <form method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="mode" value="staff">
-                <div class="auth-field">
-                    <label class="auth-label">Username</label>
-                    <div class="auth-input-wrap">
-                        <i class="bi bi-person auth-input-icon"></i>
-                        <input type="text" name="username" class="auth-input" placeholder="Enter your username" required>
+                <input type="hidden" name="step" value="otp">
+                <div class="auth-otp-box">
+                    <i class="bi bi-envelope-check"></i>
+                    <p>Enter the 6-digit code sent to</p>
+                    <strong>{{ phone }}</strong>
+                    {% if display_otp %}
+                    <div class="auth-otp-demo">
+                        <span>Demo SMS</span>
+                        <b>{{ display_otp }}</b>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="auth-field">
-                    <label class="auth-label">Password</label>
+                    <label class="auth-label">Verification code</label>
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-123 auth-input-icon"></i>
+                        <input type="text" name="otp" class="auth-input" inputmode="numeric" maxlength="6" placeholder="6-digit code" required>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn"><i class="bi bi-check-lg me-2"></i>Verify</button>
+            </form>
+            {% elif step == 'pin' %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="pin">
+                <p class="auth-hint"><i class="bi bi-shield-lock me-1"></i>Create a new 4-6 digit master PIN.</p>
+                <div class="auth-field">
+                    <label class="auth-label">New master PIN</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock auth-input-icon"></i>
-                        <input type="password" name="password" class="auth-input" placeholder="Enter your password" required style="padding-right:2.6rem">
+                        <input type="password" name="pin" class="auth-input" inputmode="numeric" maxlength="6" placeholder="4-6 digits" required style="padding-right:2.6rem">
                         <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
                 </div>
-                <button type="submit" class="auth-btn"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</button>
+                <div class="auth-field">
+                    <label class="auth-label">Confirm PIN</label>
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-lock-fill auth-input-icon"></i>
+                        <input type="password" name="confirm_pin" class="auth-input" inputmode="numeric" maxlength="6" placeholder="Repeat PIN" required style="padding-right:2.6rem">
+                        <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn"><i class="bi bi-check-lg me-2"></i>Set PIN</button>
             </form>
+            {% endif %}
 
             <p class="auth-switch">
-                Don't have an account? <a href="{% url 'signup' %}">Create one</a>
+                Remembered it? <a href="{% url 'login' %}">Back to sign in</a>
             </p>
         </div>
     </div>
@@ -105,10 +116,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--background); }
 
-.auth-wrap {
-    display: flex;
-    min-height: 100vh;
-}
+.auth-wrap { display: flex; min-height: 100vh; }
 
 .auth-banner {
     flex: 1;
@@ -143,11 +151,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     background: rgba(255,255,255,0.03);
 }
 
-.auth-banner-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 400px;
-}
+.auth-banner-inner { position: relative; z-index: 1; max-width: 400px; }
 
 .auth-logo {
     width: 56px;
@@ -203,13 +207,6 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     font-size: 0.88rem;
     line-height: 1.6;
     font-style: italic;
-    margin-bottom: 0.6rem;
-}
-
-.auth-author {
-    color: rgba(255,255,255,0.4);
-    font-size: 0.78rem;
-    font-weight: 500;
 }
 
 .auth-form-panel {
@@ -220,15 +217,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     padding: 2rem;
 }
 
-.auth-form-inner {
-    width: 100%;
-    max-width: 380px;
-}
+.auth-form-inner { width: 100%; max-width: 380px; }
 
-.auth-form-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
+.auth-form-header { text-align: center; margin-bottom: 2rem; }
 
 .auth-form-icon {
     width: 56px;
@@ -250,14 +241,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     margin-bottom: 0.25rem;
 }
 
-.auth-form-sub {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
+.auth-form-sub { color: var(--text-muted); font-size: 0.9rem; }
 
 .auth-alert {
-    background: #fee2e2;
-    color: #991b1b;
     font-size: 0.85rem;
     padding: 0.7rem 1rem;
     border-radius: 10px;
@@ -266,36 +252,10 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     align-items: center;
 }
 
-.auth-tabs {
-    display: flex;
-    background: var(--background-light);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 1.5rem;
-}
+.auth-alert-danger { background: #fee2e2; color: #991b1b; }
+.auth-alert-success { background: #d1fae5; color: #065f46; }
 
-.auth-tab {
-    flex: 1;
-    padding: 0.55rem;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    font-family: inherit;
-}
-
-.auth-tab.active {
-    background: var(--primary);
-    color: #fff;
-}
-
-.auth-field {
-    margin-bottom: 1.2rem;
-}
+.auth-field { margin-bottom: 1.2rem; }
 
 .auth-label {
     display: block;
@@ -305,9 +265,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     margin-bottom: 0.4rem;
 }
 
-.auth-input-wrap {
-    position: relative;
-}
+.auth-input-wrap { position: relative; }
 
 .auth-input-icon {
     position: absolute;
@@ -355,20 +313,49 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 
 .auth-input::placeholder { color: var(--text-muted); opacity: 0.6; }
 
-.auth-options {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1.5rem;
+.auth-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+    line-height: 1.5;
 }
 
-.auth-forgot {
-    font-size: 0.85rem;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
+.auth-otp-box {
+    text-align: center;
+    background: var(--background-light);
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 1.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
-.auth-forgot:hover { text-decoration: underline; }
+.auth-otp-box i { font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem; display: block; }
+.auth-otp-box strong { display: block; color: var(--text); margin-top: 0.2rem; }
+
+.auth-otp-demo {
+    margin-top: 1rem;
+    padding: 0.7rem;
+    background: #d1fae5;
+    border-radius: 8px;
+}
+
+.auth-otp-demo span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #065f46;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+}
+
+.auth-otp-demo b {
+    font-size: 1.6rem;
+    letter-spacing: 0.35em;
+    color: #065f46;
+}
 
 .auth-btn {
     width: 100%;
@@ -411,15 +398,6 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 </style>
 
 <script>
-document.querySelectorAll('.auth-tab').forEach(function(tab){
-    tab.addEventListener('click', function(){
-        var target = this.dataset.tab;
-        document.querySelectorAll('.auth-tab').forEach(function(t){ t.classList.toggle('active', t === tab); });
-        document.querySelectorAll('.auth-form-pane').forEach(function(pane){
-            pane.classList.toggle('d-none', pane.dataset.pane !== target);
-        });
-    });
-});
 document.querySelectorAll('.auth-eye').forEach(function(btn){
     btn.addEventListener('click', function(){
         var input = this.previousElementSibling;

@@ -46,7 +46,7 @@
             <div class="auth-form-header">
                 <div class="auth-form-icon"><i class="bi bi-person-plus-fill"></i></div>
                 <h3 class="auth-form-title">Create account</h3>
-                <p class="auth-form-sub">Join thousands of Ghanaian students</p>
+                <p class="auth-form-sub">Sign up takes less than a minute</p>
             </div>
 
             {% if messages %}
@@ -57,40 +57,86 @@
                 {% endfor %}
             {% endif %}
 
+            <!-- Step indicators -->
+            <div class="auth-steps">
+                <div class="auth-step {% if step == 'phone' %}active{% elif step != 'phone' %}done{% endif %}">
+                    <span class="auth-step-num">{% if step != 'phone' %}<i class="bi bi-check"></i>{% else %}1{% endif %}</span>
+                    <span class="auth-step-label">Phone</span>
+                </div>
+                <div class="auth-step-line {% if step != 'phone' %}active{% endif %}"></div>
+                <div class="auth-step {% if step == 'otp' %}active{% elif step == 'pin' %}done{% endif %}">
+                    <span class="auth-step-num">{% if step == 'pin' %}<i class="bi bi-check"></i>{% else %}2{% endif %}</span>
+                    <span class="auth-step-label">Verify</span>
+                </div>
+                <div class="auth-step-line {% if step == 'pin' %}active{% endif %}"></div>
+                <div class="auth-step {% if step == 'pin' %}active{% endif %}">
+                    <span class="auth-step-num">3</span>
+                    <span class="auth-step-label">PIN</span>
+                </div>
+            </div>
+
+            {% if step == 'phone' %}
             <form method="POST">
                 {% csrf_token %}
+                <input type="hidden" name="step" value="phone">
                 <div class="auth-field">
-                    <label class="auth-label">Username</label>
+                    <label class="auth-label">Phone number</label>
                     <div class="auth-input-wrap">
-                        <i class="bi bi-person auth-input-icon"></i>
-                        <input type="text" name="username" class="auth-input" placeholder="Choose a username" required>
+                        <i class="bi bi-telephone auth-input-icon"></i>
+                        <input type="tel" name="phone" class="auth-input" placeholder="e.g. 0241234567" required>
                     </div>
                 </div>
-                <div class="auth-field">
-                    <label class="auth-label">Email</label>
-                    <div class="auth-input-wrap">
-                        <i class="bi bi-envelope auth-input-icon"></i>
-                        <input type="email" name="email" class="auth-input" placeholder="Enter your email" required>
+                <p class="auth-hint"><i class="bi bi-info-circle me-1"></i>We'll send a one-time code to verify your number.</p>
+                <button type="submit" class="auth-btn"><i class="bi bi-arrow-right me-2"></i>Continue</button>
+            </form>
+            {% elif step == 'otp' %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="otp">
+                <div class="auth-otp-box">
+                    <i class="bi bi-envelope-check"></i>
+                    <p>Enter the 6-digit code sent to</p>
+                    <strong>{{ phone }}</strong>
+                    {% if display_otp %}
+                    <div class="auth-otp-demo">
+                        <span>Demo SMS</span>
+                        <b>{{ display_otp }}</b>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="auth-field">
-                    <label class="auth-label">Password</label>
+                    <label class="auth-label">Verification code</label>
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-123 auth-input-icon"></i>
+                        <input type="text" name="otp" class="auth-input" inputmode="numeric" maxlength="6" placeholder="6-digit code" required>
+                    </div>
+                </div>
+                <button type="submit" class="auth-btn"><i class="bi bi-check-lg me-2"></i>Verify</button>
+            </form>
+            {% elif step == 'pin' %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="pin">
+                <p class="auth-hint"><i class="bi bi-shield-lock me-1"></i>Create a 4-6 digit master PIN. This replaces a password and is used to log in.</p>
+                <div class="auth-field">
+                    <label class="auth-label">Master PIN</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock auth-input-icon"></i>
-                        <input type="password" name="password" class="auth-input" placeholder="Create a password" required style="padding-right:2.6rem">
+                        <input type="password" name="pin" class="auth-input" inputmode="numeric" maxlength="6" placeholder="4-6 digits" required style="padding-right:2.6rem">
                         <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
                 </div>
                 <div class="auth-field">
-                    <label class="auth-label">Confirm password</label>
+                    <label class="auth-label">Confirm PIN</label>
                     <div class="auth-input-wrap">
                         <i class="bi bi-lock-fill auth-input-icon"></i>
-                        <input type="password" name="confirm" class="auth-input" placeholder="Confirm your password" required style="padding-right:2.6rem">
+                        <input type="password" name="confirm_pin" class="auth-input" inputmode="numeric" maxlength="6" placeholder="Repeat PIN" required style="padding-right:2.6rem">
                         <button type="button" class="auth-eye"><i class="bi bi-eye-slash"></i></button>
                     </div>
                 </div>
-                <button type="submit" class="auth-btn"><i class="bi bi-person-plus me-2"></i>Create Account</button>
+                <button type="submit" class="auth-btn"><i class="bi bi-person-check me-2"></i>Create Account</button>
             </form>
+            {% endif %}
 
             <p class="auth-switch">
                 Already have an account? <a href="{% url 'login' %}">Sign in</a>
@@ -211,7 +257,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 
 .auth-form-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .auth-form-icon {
@@ -250,6 +296,61 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 
 .auth-alert-danger { background: #fee2e2; color: #991b1b; }
 .auth-alert-success { background: #d1fae5; color: #065f46; }
+
+.auth-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.auth-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-muted);
+}
+
+.auth-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--background-light);
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.auth-step.active .auth-step-num {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.auth-step.done .auth-step-num {
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #fff;
+}
+
+.auth-step-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.auth-step-line {
+    width: 44px;
+    height: 2px;
+    background: var(--border);
+    margin: 0 0.5rem 1.1rem;
+}
+
+.auth-step-line.active { background: #16a34a; }
 
 .auth-field {
     margin-bottom: 1.2rem;
@@ -291,11 +392,6 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     font-family: inherit;
 }
 
-.auth-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
-}
-
 .auth-eye {
     position: absolute;
     right: 4px;
@@ -311,7 +407,56 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .auth-eye:hover { color: var(--primary); background: var(--background-light); }
 
+.auth-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
+}
+
 .auth-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+.auth-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+    line-height: 1.5;
+}
+
+.auth-otp-box {
+    text-align: center;
+    background: var(--background-light);
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    margin-bottom: 1.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.auth-otp-box i { font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem; display: block; }
+.auth-otp-box strong { display: block; color: var(--text); margin-top: 0.2rem; }
+
+.auth-otp-demo {
+    margin-top: 1rem;
+    padding: 0.7rem;
+    background: #d1fae5;
+    border-radius: 8px;
+}
+
+.auth-otp-demo span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #065f46;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+}
+
+.auth-otp-demo b {
+    font-size: 1.6rem;
+    letter-spacing: 0.35em;
+    color: #065f46;
+}
 
 .auth-btn {
     width: 100%;

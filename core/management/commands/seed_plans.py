@@ -11,6 +11,7 @@ FEATURES = [
     ('Past Questions (Unlimited)', 'past_questions', 'past_questions', 'Unlimited access to all past question papers'),
     ('Detailed Analytics', 'detailed_analytics', 'detailed_analytics', 'Advanced programme comparison and fit analytics'),
     ('Priority Support', 'priority_support', 'priority_support', 'Email and chat priority support'),
+    ('Termly Progress Analysis', 'terminal_analysis', 'terminal_analysis', 'Upload term results and track progress towards your path'),
 ]
 
 PLANS = [
@@ -26,37 +27,18 @@ PLANS = [
         'features': ['find_my_path', 'find_schools', 'career_basic'],
     },
     {
-        'name': 'Freemium',
-        'slug': 'freemium',
-        'description': 'More insights for serious explorers.',
-        'price_monthly': 15,
-        'price_yearly': 150,
-        'sort_order': 1,
-        'badge_label': 'Popular',
-        'color': '#2d5a8e',
-        'features': ['find_my_path', 'find_schools', 'career_basic', 'career_detailed', 'past_questions_limited'],
-    },
-    {
-        'name': 'Premium Basic',
-        'slug': 'premium-basic',
-        'description': 'Full access for committed students.',
+        'name': 'Premium',
+        'slug': 'premium',
+        'description': 'Everything unlocked. All paid features plus unlimited access.',
         'price_monthly': 40,
         'price_yearly': 400,
-        'sort_order': 2,
-        'badge_label': '',
-        'color': '#1e3a5f',
-        'features': ['find_my_path', 'find_schools', 'career_basic', 'career_detailed', 'past_questions'],
-    },
-    {
-        'name': 'Premium Pro',
-        'slug': 'premium-pro',
-        'description': 'Everything including priority support.',
-        'price_monthly': 70,
-        'price_yearly': 700,
-        'sort_order': 3,
+        'sort_order': 1,
         'badge_label': 'Best Value',
-        'color': '#c2410c',
-        'features': ['find_my_path', 'find_schools', 'career_basic', 'career_detailed', 'past_questions', 'detailed_analytics', 'priority_support'],
+        'color': '#1e3a5f',
+        'features': [
+            'find_my_path', 'find_schools', 'career_basic', 'career_detailed',
+            'past_questions', 'detailed_analytics', 'priority_support', 'terminal_analysis',
+        ],
     },
 ]
 
@@ -77,6 +59,7 @@ class Command(BaseCommand):
                 self.stdout.write(f'  Created feature: {name}')
 
         # Create plans
+        desired_slugs = [p['slug'] for p in PLANS]
         for plan_data in PLANS:
             plan, was_created = SubscriptionPlan.objects.get_or_create(
                 slug=plan_data['slug'],
@@ -90,6 +73,8 @@ class Command(BaseCommand):
                     'color': plan_data['color'],
                 }
             )
+            plan.is_active = True
+            plan.save()
             if not was_created and plan.color != plan_data['color']:
                 plan.color = plan_data['color']
                 plan.save()
@@ -105,5 +90,12 @@ class Command(BaseCommand):
             for codename in current - desired:
                 PlanFeatureThrough.objects.filter(plan=plan, feature__codename=codename).delete()
                 self.stdout.write(f'    Removed {codename} from {plan_data["name"]}')
+
+        # Deactivate any plans no longer in the desired list (legacy plans).
+        for legacy in SubscriptionPlan.objects.exclude(slug__in=desired_slugs):
+            if legacy.is_active:
+                legacy.is_active = False
+                legacy.save()
+                self.stdout.write(f'  Deactivated legacy plan: {legacy.name}')
 
         self.stdout.write(self.style.SUCCESS('Done seeding subscription data'))
