@@ -190,9 +190,16 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SECURE_REFERRER_POLICY = 'same-origin'
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://edupath-0w8x.onrender.com',
-    'https://educate460.onrender.com',
+    # Dynamically include the Render-assigned hostname
+    _render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
+    if _render_host:
+        CSRF_TRUSTED_ORIGINS = [f'https://{_render_host}']
+    else:
+        CSRF_TRUSTED_ORIGINS = []
+else:
+    CSRF_TRUSTED_ORIGINS = []
+
+CSRF_TRUSTED_ORIGINS += [
     'https://www.edupathghana.com',
     'https://edupathghana.com',
 ]
