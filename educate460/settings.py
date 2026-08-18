@@ -109,7 +109,19 @@ elif DEBUG:
         }
     }
 else:
-    raise ImproperlyConfigured("DATABASE_URL is required in production")
+    # Production without DATABASE_URL: don't crash at import time, otherwise
+    # build-time commands that don't touch the DB (collectstatic) would fail.
+    # Any real database access will raise a clear connection error instead.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'edupath',
+            'USER': '',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
