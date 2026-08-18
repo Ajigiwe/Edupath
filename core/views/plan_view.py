@@ -41,6 +41,7 @@ def create_plan(request):
             description=request.POST.get('description', ''),
             price_monthly=request.POST.get('price_monthly', 0),
             price_yearly=request.POST.get('price_yearly', 0),
+            duration_days=request.POST.get('duration_days', 30),
             is_active=request.POST.get('is_active') == 'on',
             sort_order=request.POST.get('sort_order', 0),
             badge_label=request.POST.get('badge_label', ''),
@@ -65,6 +66,7 @@ def update_plan(request, plan_id):
         plan.description = request.POST.get('description', '')
         plan.price_monthly = request.POST.get('price_monthly', 0)
         plan.price_yearly = request.POST.get('price_yearly', 0)
+        plan.duration_days = request.POST.get('duration_days', 30)
         plan.is_active = request.POST.get('is_active') == 'on'
         plan.sort_order = request.POST.get('sort_order', 0)
         plan.badge_label = request.POST.get('badge_label', '')

@@ -1,7 +1,9 @@
 import json
+from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from core.models import SubscriptionPlan, UserSubscription, Payment, UserActivity
 from core.services.paystack_service import initialize_transaction, verify_transaction, _ghs_to_kobo
 
@@ -21,16 +23,46 @@ def my_subscription(request):
         sub = None
     payments = Payment.objects.filter(user=request.user)[:10]
     plans = SubscriptionPlan.objects.filter(is_active=True)
+
+    # A paid subscription locks plan switching until it expires.
+    locked = False
+    if sub and sub.plan and sub.plan.price_monthly > 0:
+        locked = (
+            sub.status in ('ACTIVE', 'TRIAL')
+            and (not sub.end_date or sub.end_date > timezone.now())
+        )
+
     return render(request, 'my_subscription.html', {
         'subscription': sub,
         'payments': payments,
         'plans': plans,
+        'locked': locked,
     })
 
 
 @login_required(login_url='login')
 def subscribe(request, plan_slug):
     plan = get_object_or_404(SubscriptionPlan, slug=plan_slug, is_active=True)
+
+    # Lock plan switching while a paid subscription is still active.
+    try:
+        current_sub = request.user.subscription
+    except UserSubscription.DoesNotExist:
+        current_sub = None
+
+    if current_sub and current_sub.plan and current_sub.plan.price_monthly > 0:
+        is_currently_active = (
+            current_sub.status in ('ACTIVE', 'TRIAL')
+            and (not current_sub.end_date or current_sub.end_date > timezone.now())
+        )
+        if is_currently_active and current_sub.plan_id != plan.id:
+            end_display = current_sub.end_date.strftime('%B %d, %Y') if current_sub.end_date else 'the end of your period'
+            messages.warning(
+                request,
+                f'Your {current_sub.plan.name} subscription is active until {end_display}. '
+                'You can switch plans after it expires.'
+            )
+            return redirect('my_subscription')
 
     if plan.price_monthly == 0:
         sub, created = UserSubscription.objects.get_or_create(
@@ -40,6 +72,7 @@ def subscribe(request, plan_slug):
         if not created:
             sub.plan = plan
             sub.status = 'ACTIVE'
+            sub.end_date = None
             sub.save()
         UserActivity.objects.create(user=request.user, activity_type='PLAN_CHANGE', description=f'Subscribed to {plan.name} (Free)')
         Payment.objects.create(
@@ -144,6 +177,10 @@ def paystack_callback(request):
                 plan_name = new_plan.name
 
         sub.status = 'ACTIVE'
+        if sub.plan and sub.plan.price_monthly > 0:
+            sub.end_date = timezone.now() + timedelta(days=sub.plan.duration_days or 30)
+        else:
+            sub.end_date = None
         sub.save()
         UserActivity.objects.create(user=payment.user, activity_type='PLAN_CHANGE', description=f'Payment completed — {plan_name}')
 

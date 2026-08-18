@@ -27,6 +27,7 @@
           data-id="{{ p.id }}" data-name="{{ p.name }}"
           data-slug="{{ p.slug }}" data-description="{{ p.description|default:'' }}"
           data-price_monthly="{{ p.price_monthly }}" data-price_yearly="{{ p.price_yearly }}"
+          data-duration="{{ p.duration_days }}"
           data-active="{% if p.is_active %}1{% else %}0{% endif %}"
           data-sort="{{ p.sort_order }}" data-badge="{{ p.badge_label|default:'' }}" data-color="{{ p.color }}"
           data-features="{% for pf in p.planfeaturethrough_set.all %}{{ pf.feature.id }},{% endfor %}"><i class="bi bi-pencil"></i></button>
@@ -39,7 +40,7 @@
     <div class="plan-card-body">
       <div class="plan-meta">
         <span class="plan-price"><strong>GHS {{ p.price_monthly }}</strong><span class="cell-muted">/mo</span></span>
-        <span class="plan-slug cell-muted">/{{ p.slug }}</span>
+        <span class="cell-muted" style="font-size:0.78rem">{% if p.duration_days %}Lasts {{ p.duration_days }} days{% endif %} &middot; /{{ p.slug }}</span>
       </div>
       {% if p.description %}
       <div class="plan-desc cell-muted">{{ p.description|truncatewords:20 }}</div>
@@ -124,6 +125,11 @@
       <input type="number" name="price_yearly" class="form-control" placeholder="0.00" step="0.01" min="0" value="0" style="border-radius:0 8px 8px 0">
     </div>
   </div>
+  <div class="col-md-6">
+    <label class="form-label">Duration (days)</label>
+    <input type="number" name="duration_days" class="form-control" placeholder="30" min="1" value="30">
+    <small style="color:#78716c;font-size:0.75rem">How long a paid subscription lasts before it expires.</small>
+  </div>
 
   <div class="col-12"><hr class="my-1"><div class="modal-section-title">Presentation</div></div>
   <div class="col-md-4">
@@ -201,6 +207,10 @@
       <input type="number" name="price_yearly" id="editPriceYearly" class="form-control" step="0.01" min="0" style="border-radius:0 8px 8px 0">
     </div>
   </div>
+  <div class="col-md-6">
+    <label class="form-label">Duration (days)</label>
+    <input type="number" name="duration_days" id="editDuration" class="form-control" min="1">
+  </div>
 
   <div class="col-12"><hr class="my-1"><div class="modal-section-title">Presentation</div></div>
   <div class="col-md-4">
@@ -244,6 +254,7 @@ document.getElementById('editSlug').value=btn.dataset.slug;
 document.getElementById('editDescription').value=btn.dataset.description||'';
 document.getElementById('editPriceMonthly').value=btn.dataset.price_monthly||'0';
 document.getElementById('editPriceYearly').value=btn.dataset.price_yearly||'0';
+document.getElementById('editDuration').value=btn.dataset.duration||'30';
 document.getElementById('editColor').value=btn.dataset.color||'#1e3a5f';
 document.getElementById('editColorHex').value=btn.dataset.color||'#1e3a5f';
 document.getElementById('editBadge').value=btn.dataset.badge||'';

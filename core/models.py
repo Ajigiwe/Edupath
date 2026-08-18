@@ -340,6 +340,7 @@ class SubscriptionPlan(models.Model):
     description = models.TextField(blank=True)
     price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Monthly price in GHS")
     price_yearly = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Yearly price in GHS")
+    duration_days = models.PositiveIntegerField(default=30, help_text="How many days a paid subscription lasts before expiry")
     features = models.ManyToManyField(PlanFeature, through='PlanFeatureThrough', blank=True)
     is_active = models.BooleanField(default=True)
     sort_order = models.IntegerField(default=0)

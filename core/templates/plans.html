@@ -33,6 +33,9 @@
           {% if plan.price_yearly > 0 %}
           <div class="plan-yearly">GHS {{ plan.price_yearly }} / year</div>
           {% endif %}
+          {% if plan.price_monthly > 0 and plan.duration_days %}
+          <div class="plan-yearly">Lasts {{ plan.duration_days }} days</div>
+          {% endif %}
           <p class="plan-desc">{{ plan.description }}</p>
           <ul class="plan-features-list">
             {% for pt in plan.planfeaturethrough_set.all %}
